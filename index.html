@@ -1,0 +1,108 @@
+```html
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>字卡机器人 · 全功能版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: #f5f0e8;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            transition: background 0.3s;
+        }
+        /* 夜间模式变量 */
+        body.night-mode {
+            background: #1e1a16;
+        }
+        body.night-mode .container {
+            background: #2c2722;
+            color: #e0d6cc;
+            border-color: #3e3730;
+        }
+        body.night-mode .toolbar {
+            background: #2c2722;
+            border-color: #3e3730;
+        }
+        body.night-mode .toolbar h1,
+        body.night-mode .toolbar button {
+            color: #d9cdbc;
+        }
+        body.night-mode .session-bar {
+            background: #332d27;
+            border-color: #4a4139;
+        }
+        body.night-mode .session-tab {
+            background: #4a4139;
+            color: #e0d6cc;
+        }
+        body.night-mode .session-tab.active {
+            background: #6b5f53;
+        }
+        body.night-mode .card-library {
+            background: #3e3730;
+        }
+        body.night-mode .add-card input,
+        body.night-mode .add-card button {
+            background: #4f463d;
+            color: #e0d6cc;
+            border-color: #6b5f53;
+        }
+              body.night-mode .session-tab.active {
+            background: #6b5f53;
+        }
+        body.night-mode .card-library {
+            background: #3e3730;
+        }
+        body.night-mode .add-card input,
+        body.night-mode .add-card button {
+            background: #4f463d;
+            color: #e0d6cc;
+            border-color: #6b5f53;
+        }
+        body.night-mode .card-item {
+            background: #4f463d;
+            color: #e0d6cc;
+            border-color: #6b5f53;
+        }
+        body.night-mode .chat-area {
+            background: #332d27;
+        }
+        body.night-mode .bubble.bot {
+            background: #4f463d;
+            color: #e0d6cc;
+            border-color: #6b5f53;
+        }
+        body.night-mode .input-area {
+            background: #2c2722;
+            border-color: #4a4139;
+        }
+        body.night-mode .input-area input {
+            background: #3e3730;
+            color: #e0d6cc;
+            border-color: #6b5f53;
+        }
+        body.night-mode .input-area button {
+            background: #6b5f53;
+            color: white;
+        }
+        body.night-mode .modal-content {
+            background: #2c2722;
+            color: #e0d6cc;
+        }
+        body.night-mode .setting-item input,
+        body.night-mode .setting-item select {
+            background: #3e3730;
+            color: #e0d6cc;
+            border-color: #6b5f53;
+        }
