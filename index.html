@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>沉沉念念</title>
+    <title>念沉</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
@@ -19,21 +19,20 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 8px;
+            padding: 0;
+            overflow: hidden;
         }
 
         .app {
-            width: 360px;
-            max-width: 100%;
-            height: 600px;
-            max-height: 90vh;
+            width: 100%;
+            height: 100vh;
             background-color: #f1f5f6;
-            border-radius: 28px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 8px 20px rgba(90, 100, 100, 0.08);
+            border-radius: 0;
+            box-shadow: none;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            border: 1px solid rgba(190, 200, 210, 0.3);
+            border: none;
             position: relative;
         }
 
@@ -189,6 +188,7 @@
             transition: background-image 0.2s;
             background-size: cover;
             background-position: center;
+            position: relative;
         }
         .messages-container::-webkit-scrollbar {
             width: 4px;
@@ -228,6 +228,45 @@
         }
         .message-row.contact .message-bubble {
             background-color: rgba(219, 229, 241, 0.8);
+        }
+
+        /* 正在输入气泡 */
+        .typing-indicator {
+            display: flex;
+            justify-content: flex-start;
+            margin-top: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .typing-indicator.show {
+            opacity: 1;
+        }
+        .typing-bubble {
+            background-color: rgba(219, 229, 241, 0.8);
+            color: #5a5a5a;
+            padding: 8px 16px;
+            border-radius: 24px 24px 24px 8px;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            backdrop-filter: blur(2px);
+            box-shadow: 0 2px 6px rgba(150, 150, 150, 0.1);
+        }
+        .typing-bubble span {
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            background-color: #5a5a5a;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+        .typing-bubble span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-bubble span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-4px); opacity: 1; }
         }
 
         .quote-indicator {
@@ -380,7 +419,8 @@
         .panel-footer {
             margin-top: 16px;
             display: flex;
-            justify-content: flex-end;
+            align-items: center;
+            justify-content: space-between;
             gap: 10px;
         }
         .panel-footer button {
@@ -391,10 +431,22 @@
             color: #5a5a5a;
             font-size: 0.85rem;
             cursor: pointer;
+            transition: 0.2s;
         }
         .panel-footer button:hover { background: #e1b2b2; }
+        /* 线条按钮样式 */
+        .outline-btn {
+            background: transparent !important;
+            border: 1px solid #b8cfd8 !important;
+            color: #5a5a5a !important;
+        }
+        .outline-btn:hover {
+            background: #e1b2b2 !important;
+            border-color: #e1b2b2 !important;
+            color: white !important;
+        }
 
-        /* 双按钮布局 (用于主设置和聊天设置内层) */
+        /* 双按钮布局 */
         .double-buttons {
             display: flex;
             gap: 12px;
@@ -423,7 +475,6 @@
             color: white;
         }
 
-        /* 图标+文字入口 (用于外观设置子面板) */
         .icon-row {
             display: flex;
             gap: 20px;
@@ -449,7 +500,6 @@
             background: rgba(225, 178, 178, 0.3);
         }
 
-        /* 九宫格配色 */
         .theme-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -475,7 +525,6 @@
             transform: scale(1.02);
         }
 
-        /* 自定义颜色编辑器 */
         .color-editor {
             display: flex;
             flex-direction: column;
@@ -501,7 +550,6 @@
             cursor: pointer;
         }
 
-        /* 滑块 */
         .slider-row {
             display: flex;
             align-items: center;
@@ -521,7 +569,6 @@
             color: #5a5a5a;
         }
 
-        /* 开关 */
         .switch-row {
             display: flex;
             align-items: center;
@@ -568,7 +615,6 @@
             transform: translateX(20px);
         }
 
-        /* 已读回执选项 */
         .receipt-options {
             display: flex;
             gap: 20px;
@@ -591,7 +637,6 @@
             display: none;
         }
 
-        /* 子面板内部分组 */
         .section-title {
             font-size: 0.9rem;
             font-weight: 500;
@@ -599,7 +644,6 @@
             margin: 16px 0 8px;
         }
 
-        /* 引用消息菜单 */
         .quote-menu {
             position: absolute;
             background: white;
@@ -622,6 +666,13 @@
             background: #e1b2b2;
             color: white;
         }
+
+        @media (max-width: 360px) {
+            .name { max-width: 60px; }
+            .status { max-width: 60px; }
+            .icon-btn { width: 32px; height: 32px; font-size: 1.2rem; }
+            .chat-header { padding: 6px 8px; }
+        }
     </style>
 </head>
 <body>
@@ -638,7 +689,7 @@
                 </div>
             </div>
 
-            <!-- 中间图标组：联系人 + 字卡库 + 设置 -->
+            <!-- 中间图标组 -->
             <div class="center-icons">
                 <button class="icon-btn" id="contact-icon" title="会话管理"><i class="fa-regular fa-address-book"></i></button>
                 <button class="icon-btn" id="wordcard-icon" title="字卡库"><i class="fa-regular fa-rectangle-list"></i></button>
@@ -656,7 +707,14 @@
         </div>
 
         <!-- 消息容器 -->
-        <div class="messages-container" id="messages-container"></div>
+        <div class="messages-container" id="messages-container">
+            <!-- 正在输入指示器 (固定位于消息列表底部) -->
+            <div class="typing-indicator" id="typing-indicator">
+                <div class="typing-bubble">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        </div>
 
         <!-- 底部输入 -->
         <div class="chat-footer">
@@ -665,7 +723,7 @@
         </div>
     </div>
 
-    <!-- 字卡库面板 -->
+    <!-- 字卡库面板 (新增上传/输出按钮) -->
     <div class="overlay" id="wordcard-overlay">
         <div class="panel">
             <div class="panel-header">
@@ -678,12 +736,16 @@
             </div>
             <div class="wordcard-list" id="wordcard-list" style="overflow-y:auto; max-height:300px;"></div>
             <div class="panel-footer">
+                <div style="display: flex; gap: 8px;">
+                    <button id="upload-wordcard" class="outline-btn"><i class="fa-regular fa-upload"></i> 上传</button>
+                    <button id="export-wordcard" class="outline-btn"><i class="fa-regular fa-download"></i> 输出</button>
+                </div>
                 <button id="wordcard-close-btn">关闭</button>
             </div>
         </div>
     </div>
 
-    <!-- 联系人面板 (会话管理) -->
+    <!-- 联系人面板 -->
     <div class="overlay" id="contact-overlay">
         <div class="panel">
             <div class="panel-header">
@@ -717,7 +779,7 @@
         </div>
     </div>
 
-    <!-- ========== 设置主面板 ========== -->
+    <!-- 设置主面板 -->
     <div class="overlay" id="settings-main-overlay">
         <div class="panel">
             <div class="panel-header">
@@ -734,7 +796,7 @@
         </div>
     </div>
 
-    <!-- ========== 外观设置子面板 ========== -->
+    <!-- 外观设置子面板 -->
     <div class="overlay" id="appearance-overlay">
         <div class="panel">
             <div class="panel-header">
@@ -752,7 +814,7 @@
         </div>
     </div>
 
-    <!-- ========== 主题配色子面板 ========== -->
+    <!-- 主题配色子面板 -->
     <div class="overlay" id="theme-overlay">
         <div class="panel">
             <div class="panel-header">
@@ -774,7 +836,7 @@
         </div>
     </div>
 
-    <!-- ========== 背景子面板 ========== -->
+    <!-- 背景子面板 -->
     <div class="overlay" id="background-overlay">
         <div class="panel">
             <div class="panel-header">
@@ -793,7 +855,7 @@
         </div>
     </div>
 
-    <!-- ========== 聊天设置主面板 ========== -->
+    <!-- 聊天设置主面板 -->
     <div class="overlay" id="chat-settings-main-overlay">
         <div class="panel">
             <div class="panel-header">
@@ -811,7 +873,7 @@
         </div>
     </div>
 
-    <!-- ========== 消息交互子面板 ========== -->
+    <!-- 消息交互子面板 -->
     <div class="overlay" id="msg-interact-overlay">
         <div class="panel">
             <div class="panel-header">
@@ -836,7 +898,7 @@
         </div>
     </div>
 
-    <!-- ========== 节奏子面板 ========== -->
+    <!-- 节奏子面板 -->
     <div class="overlay" id="rhythm-overlay">
         <div class="panel">
             <div class="panel-header">
@@ -911,7 +973,7 @@
             customColors: { primary: '#f1f5f6', secondary: '#d2e6ec', accent: '#d1d1d1' },
             bgImage: null,
             quoteEnabled: true,
-            receiptStyle: 'text', // 'text' 或 'doublecheck'
+            receiptStyle: 'text',
             minWait: 1,
             maxWait: 120
         };
@@ -922,13 +984,10 @@
         let wordCards = [];
         let statuses = [];
         let settings = { ...defaultSettings };
-
-        // 当前正在引用的消息（用于发送时）
         let quotedMessage = null;
 
         // ========== 加载持久化数据 ==========
         function loadData() {
-            // 联系人
             const storedContacts = localStorage.getItem(CONTACTS_KEY);
             if (storedContacts) {
                 try { contacts = JSON.parse(storedContacts); } catch { contacts = null; }
@@ -966,7 +1025,6 @@
                 selectedContactId = contacts[0]?.id || null;
             }
 
-            // 字卡库
             const storedWords = localStorage.getItem(WORDCARDS_KEY);
             if (storedWords) {
                 try { wordCards = JSON.parse(storedWords); } catch { wordCards = []; }
@@ -974,7 +1032,6 @@
                 wordCards = ['不来找我', '没好好照顾自己', '别喝冰的', '你是不是在骗我', '骗我', '没听', '听了'];
             }
 
-            // 状态库
             const storedStatuses = localStorage.getItem(STATUS_KEY);
             if (storedStatuses) {
                 try { statuses = JSON.parse(storedStatuses); } catch { statuses = []; }
@@ -982,7 +1039,6 @@
                 statuses = ['在线', '忙碌', '生病', '想喝椰汁', '睡觉中', '发呆', '开心', '离线'];
             }
 
-            // 设置
             const storedSettings = localStorage.getItem(SETTINGS_KEY);
             if (storedSettings) {
                 try { settings = { ...defaultSettings, ...JSON.parse(storedSettings) }; } catch { settings = { ...defaultSettings }; }
@@ -995,7 +1051,6 @@
             } else {
                 document.getElementById('messages-container').style.backgroundImage = '';
             }
-            // 设置滑块显示
             document.getElementById('min-wait').value = settings.minWait;
             document.getElementById('min-wait-val').textContent = settings.minWait + 's';
             document.getElementById('max-wait').value = settings.maxWait;
@@ -1014,10 +1069,9 @@
         function saveStatuses() { localStorage.setItem(STATUS_KEY, JSON.stringify(statuses)); }
         function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
 
-        // 应用主题到CSS变量
         function applyTheme(index, custom) {
             let colors;
-            if (index === -1) { // 自定义
+            if (index === -1) {
                 colors = custom;
             } else {
                 colors = themes[index];
@@ -1029,7 +1083,7 @@
             document.querySelector('.chat-footer').style.backgroundColor = colors.secondary;
         }
 
-        // ========== 渲染联系人、字卡库、状态等 ==========
+        // ========== 渲染函数 ==========
         function renderContactList() {
             const container = document.getElementById('contact-list');
             if (!container) return;
@@ -1158,7 +1212,6 @@
             });
         }
 
-        // ========== 渲染主题九宫格 ==========
         function renderThemeGrid() {
             const grid = document.getElementById('theme-grid');
             let html = '';
@@ -1180,7 +1233,7 @@
             });
         }
 
-        // ========== 刷新聊天界面（包含已读回执和引用）==========
+        // ========== 刷新聊天界面 ==========
         function refreshChatDisplay() {
             const contact = contacts.find(c => c.id === selectedContactId);
             if (!contact) return;
@@ -1202,6 +1255,8 @@
 
             const messages = contact.messages || [];
             const container = document.getElementById('messages-container');
+            // 保留正在输入指示器
+            const typingIndicator = document.getElementById('typing-indicator');
             if (messages.length === 0) {
                 container.innerHTML = '<div class="empty-chat-placeholder">🥥 发送第一条消息</div>';
             } else {
@@ -1233,6 +1288,8 @@
                         </div>
                     `;
                 });
+                // 在消息列表末尾添加正在输入指示器（但隐藏）
+                html += `<div class="typing-indicator" id="typing-indicator"><div class="typing-bubble"><span></span><span></span><span></span></div></div>`;
                 container.innerHTML = html;
             }
             scrollToBottom();
@@ -1270,6 +1327,16 @@
             container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
         }
 
+        // ========== 显示/隐藏正在输入 ==========
+        function showTyping() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) indicator.classList.add('show');
+        }
+        function hideTyping() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) indicator.classList.remove('show');
+        }
+
         // ========== 发送消息 ==========
         function sendMessage() {
             const contact = contacts.find(c => c.id === selectedContactId);
@@ -1297,6 +1364,9 @@
                 }
             });
 
+            // 显示“正在输入”
+            showTyping();
+
             const minWait = settings.minWait * 1000;
             const maxWait = settings.maxWait * 1000;
             const waitTime = Math.random() * (maxWait - minWait) + minWait;
@@ -1305,18 +1375,12 @@
                 const targetContact = contacts.find(c => c.id === selectedContactId);
                 if (!targetContact) return;
                 const count = Math.floor(Math.random() * 5) + 1;
+                let repliesSent = 0;
                 for (let i = 0; i < count; i++) {
                     setTimeout(() => {
                         const still = contacts.find(c => c.id === selectedContactId);
                         if (!still) return;
-                        // 从字卡库中随机抽取 (如果字卡库不为空)
-                        let replyText;
-                        if (wordCards.length > 0) {
-                            const randomIndex = Math.floor(Math.random() * wordCards.length);
-                            replyText = wordCards[randomIndex];
-                        } else {
-                            replyText = '...'; // 字卡库为空时的后备
-                        }
+                        let replyText = wordCards.length > 0 ? wordCards[Math.floor(Math.random() * wordCards.length)] : '...';
                         const replyMsg = {
                             sender: 'contact',
                             text: replyText,
@@ -1329,7 +1393,13 @@
                         still.messages.forEach(msg => {
                             if (msg.sender === 'me' && !msg.receipt) msg.receipt = 'read';
                         });
-                        if (selectedContactId === contactId) refreshChatDisplay();
+                        if (selectedContactId === contactId) {
+                            refreshChatDisplay();
+                        }
+                        repliesSent++;
+                        if (repliesSent === count) {
+                            hideTyping();
+                        }
                     }, i * 400);
                 }
                 if (Math.random() < 0.3 && statuses.length > 0) {
@@ -1341,13 +1411,41 @@
             }, waitTime);
         }
 
+        // ========== 字卡库上传/导出 ==========
+        function importWordCardsFromFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (Array.isArray(data)) {
+                        wordCards = data;
+                        saveWordCards();
+                        renderWordCards();
+                        alert('字卡库导入成功！');
+                    } else {
+                        alert('文件格式错误：需要是一个字符串数组');
+                    }
+                } catch (err) {
+                    alert('解析 JSON 失败：' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportWordCards() {
+            const dataStr = JSON.stringify(wordCards, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '字卡库.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
         // ========== 面板控制 ==========
-        function openOverlay(id) {
-            document.getElementById(id).classList.add('show');
-        }
-        function closeOverlay(id) {
-            document.getElementById(id).classList.remove('show');
-        }
+        function openOverlay(id) { document.getElementById(id).classList.add('show'); }
+        function closeOverlay(id) { document.getElementById(id).classList.remove('show'); }
 
         // ========== 初始化事件 ==========
         function init() {
@@ -1361,7 +1459,6 @@
             document.getElementById('peer-status').addEventListener('click', () => { window.currentStatusTarget = 'peer'; openOverlay('status-overlay'); renderStatusList(); });
             document.getElementById('self-status').addEventListener('click', () => { window.currentStatusTarget = 'self'; openOverlay('status-overlay'); renderStatusList(); });
 
-            // 发送消息
             document.getElementById('send-message-btn').addEventListener('click', (e) => { e.preventDefault(); sendMessage(); });
             document.getElementById('message-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
 
@@ -1372,13 +1469,25 @@
             document.getElementById('new-contact-btn').addEventListener('click', createNewContact);
             document.getElementById('contact-overlay').addEventListener('click', (e) => { if (e.target.classList.contains('overlay')) closeOverlay('contact-overlay'); });
 
-            // 字卡库图标
+            // 字卡库
             document.getElementById('wordcard-icon').addEventListener('click', () => { renderWordCards(); openOverlay('wordcard-overlay'); });
             document.getElementById('wordcard-close-panel').addEventListener('click', () => closeOverlay('wordcard-overlay'));
             document.getElementById('wordcard-close-btn').addEventListener('click', () => closeOverlay('wordcard-overlay'));
             document.getElementById('add-wordcard-btn').addEventListener('click', addWordCard);
             document.getElementById('new-wordcard-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') addWordCard(); });
             document.getElementById('wordcard-overlay').addEventListener('click', (e) => { if (e.target.classList.contains('overlay')) closeOverlay('wordcard-overlay'); });
+
+            // 上传/输出字卡
+            document.getElementById('upload-wordcard').addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json,application/json';
+                input.onchange = (e) => {
+                    if (e.target.files[0]) importWordCardsFromFile(e.target.files[0]);
+                };
+                input.click();
+            });
+            document.getElementById('export-wordcard').addEventListener('click', exportWordCards);
 
             // 状态面板
             document.getElementById('status-close-panel').addEventListener('click', () => closeOverlay('status-overlay'));
@@ -1475,7 +1584,7 @@
                 saveSettings();
             });
 
-            // 聊天设置新导航
+            // 聊天设置
             document.getElementById('open-chat-settings').addEventListener('click', () => {
                 closeOverlay('settings-main-overlay');
                 openOverlay('chat-settings-main-overlay');
@@ -1511,7 +1620,7 @@
                 openOverlay('chat-settings-main-overlay');
             });
 
-            // 滑块和开关事件
+            // 滑块和开关
             document.getElementById('min-wait').addEventListener('input', (e) => {
                 settings.minWait = parseFloat(e.target.value);
                 document.getElementById('min-wait-val').textContent = settings.minWait + 's';
