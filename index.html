@@ -696,13 +696,6 @@
 <div class="container" id="app">
     <!-- 顶部工具栏 -->
     <div class="toolbar">
-        <h1>🧃 字卡工坊 <span>全功能版</span></h1>
-        <div class="toolbar-icons">
-            <button id="toggleLibraryBtn" title="折叠字卡库">📚</button>
-            <button id="toggleTimeFormatBtn" title="切换时间格式">🕒</button>
-            <button id="openSettingsBtn" title="全部设置">⚙️</button>
-        </div>
-    </div<div class="toolbar">
     <!-- 左侧：机器人信息 -->
     <div class="bot-info">
         <div class="bot-avatar" id="botAvatarDisplay">🤖</div>
@@ -710,6 +703,23 @@
             <span class="bot-name" id="botNameDisplay">小四</span>
             <span class="bot-status" id="botStatusDisplay">在线</span>
         </div>
+    </div>
+
+    <!-- 中间：功能图标（ID 保持不变，功能就不会失效） -->
+    <div class="toolbar-icons">
+        <button id="toggleLibraryBtn" title="折叠字卡库">📚</button>
+        <button id="toggleTimeFormatBtn" title="切换时间格式">🕒</button>
+        <button id="openSettingsBtn" title="全部设置">⚙️</button>
+    </div>
+
+    <!-- 右侧：我的信息 -->
+    <div class="user-info">
+        <div class="user-details">
+            <span class="user-name" id="userNameDisplay">沉沉</span>
+            <span class="user-status" id="userStatusDisplay">在线</span>
+        </div>
+        <div class="user-avatar" id="userAvatarDisplay">😊</div>
+    </div>
     </div>
 
     <!-- 中间：功能图标 -->
