@@ -1,34 +1,49 @@
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-<title>念培的字卡网站</title>
+<title>念培的字卡网站 · 增强版3</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
+:root{
+    --app-height:100dvh;
+    --header-color:#d2e6ec;
+    --bubble-font-size:.85rem;
+    --name-font-size:.8rem;
+}
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
     font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
 }
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+}
 body{
     background:#cbc6bc;
-    height:90vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    overflow:hidden;
+    min-height:100svh;
+    height:var(--app-height);
+}
+button,input,select{
+    font:inherit;
+}
+img{
+    user-select:none;
+    -webkit-user-drag:none;
 }
 .app{
     width:100%;
-    height:100%;
+    height:var(--app-height);
     display:flex;
     flex-direction:column;
     overflow:hidden;
     position:relative;
 }
 .chat{
-    flex:1;
     width:100%;
     height:100%;
     display:flex;
@@ -36,7 +51,7 @@ body{
     min-height:0;
 }
 
-/* ---------------- 启动加载页 ---------------- */
+/* loader */
 .startup-screen{
     position:fixed;
     inset:0;
@@ -44,54 +59,72 @@ body{
     display:flex;
     align-items:center;
     justify-content:center;
-    background:linear-gradient(135deg,var(--loader-bg1,#d8d1c9),var(--loader-bg2,#ece6df));
-    transition:opacity .55s ease, visibility .55s ease;
+    overflow:hidden;
+    background:
+        radial-gradient(circle at 18% 22%, rgba(255,255,255,.33), transparent 30%),
+        radial-gradient(circle at 82% 78%, rgba(255,255,255,.2), transparent 34%),
+        linear-gradient(135deg,var(--loader-bg1,#d8d1c9),var(--loader-bg2,#ece6df));
+    background-size:160% 160%;
+    animation:loaderBg 10s ease-in-out infinite alternate;
+    transition:opacity .9s ease, visibility .9s ease, filter .9s ease;
+}
+.startup-screen::before,
+.startup-screen::after{
+    content:"";
+    position:absolute;
+    border-radius:50%;
+    pointer-events:none;
+    filter:blur(12px);
+}
+.startup-screen::before{
+    width:52vmax;
+    height:52vmax;
+    left:-10vmax;
+    top:-10vmax;
+    background:radial-gradient(circle,var(--loader-halo,rgba(180,160,145,.22)),transparent 68%);
+    animation:floatBlob 10s ease-in-out infinite;
+}
+.startup-screen::after{
+    width:42vmax;
+    height:42vmax;
+    right:-8vmax;
+    bottom:-10vmax;
+    background:radial-gradient(circle,var(--loader-halo-2,rgba(150,165,155,.18)),transparent 70%);
+    animation:floatBlob 12s ease-in-out infinite reverse;
 }
 .startup-screen.hide{
     opacity:0;
     visibility:hidden;
-    pointer-events:none;
-}
-.startup-screen::before{
-    content:"";
-    position:absolute;
-    width:46vmax;
-    height:46vmax;
-    border-radius:50%;
-    background:radial-gradient(circle,var(--loader-halo,rgba(180,160,145,.22)),transparent 68%);
-    filter:blur(12px);
-    transform:translate(-20%,-16%);
-}
-.startup-screen::after{
-    content:"";
-    position:absolute;
-    width:34vmax;
-    height:34vmax;
-    right:-6vmax;
-    bottom:-8vmax;
-    border-radius:50%;
-    background:radial-gradient(circle,var(--loader-halo-2,rgba(150,165,155,.18)),transparent 70%);
     filter:blur(12px);
 }
 .startup-card{
     position:relative;
     z-index:1;
-    min-width:250px;
-    padding:30px 34px;
+    min-width:260px;
+    padding:30px 36px;
     border-radius:30px;
-    background:rgba(255,255,255,.36);
-    border:1px solid rgba(255,255,255,.42);
-    box-shadow:0 18px 48px rgba(0,0,0,.08);
-    backdrop-filter:blur(10px);
+    background:rgba(255,255,255,.34);
+    border:1px solid rgba(255,255,255,.45);
+    box-shadow:0 18px 50px rgba(0,0,0,.08);
+    backdrop-filter:blur(12px);
     display:flex;
     flex-direction:column;
     align-items:center;
     gap:14px;
+    transform:translateY(0) scale(1);
+    transition:transform .9s ease, opacity .9s ease, filter .9s ease;
+    animation:loaderCardIn 1.1s ease both;
+}
+.startup-screen.hide .startup-card{
+    transform:translateY(12px) scale(.98);
+    opacity:0;
+    filter:blur(8px);
 }
 .startup-icon{
-    width:72px;
-    height:72px;
+    width:74px;
+    height:74px;
     color:var(--loader-accent,#b49a8a);
+    animation:loaderIconFloat 2.8s ease-in-out infinite;
 }
 .startup-icon svg{
     width:100%;
@@ -108,12 +141,12 @@ body{
     letter-spacing:.08em;
 }
 .startup-line{
-    width:132px;
+    width:136px;
     height:4px;
     border-radius:999px;
     overflow:hidden;
     position:relative;
-    background:rgba(255,255,255,.44);
+    background:rgba(255,255,255,.45);
 }
 .startup-line::after{
     content:"";
@@ -123,16 +156,32 @@ body{
     width:42%;
     border-radius:999px;
     background:linear-gradient(90deg,transparent,var(--loader-accent,#b49a8a),transparent);
-    animation:startupSlide 1.35s infinite ease-in-out;
+    animation:startupSlide 1.55s infinite ease-in-out;
 }
 @keyframes startupSlide{
     0%{transform:translateX(-120%)}
     100%{transform:translateX(260%)}
 }
+@keyframes loaderBg{
+    from{background-position:0% 0%}
+    to{background-position:100% 100%}
+}
+@keyframes floatBlob{
+    0%,100%{transform:translate(0,0) scale(1)}
+    50%{transform:translate(18px,-14px) scale(1.03)}
+}
+@keyframes loaderIconFloat{
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-6px)}
+}
+@keyframes loaderCardIn{
+    from{opacity:0;transform:translateY(18px) scale(.98)}
+    to{opacity:1;transform:translateY(0) scale(1)}
+}
 
-/* ---------------- 聊天头部 ---------------- */
+/* header */
 .chat-header{
-    padding:8px 12px;
+    padding:calc(8px + env(safe-area-inset-top)) 12px 8px;
     background:var(--header-color,#d2e6ec);
     border-bottom:1px solid #c0d4db;
     display:flex;
@@ -147,8 +196,8 @@ body{
     gap:8px;
     min-width:0;
 }
-.peer-info{justify-content:flex-start;flex:1}
-.self-info{justify-content:flex-end;flex:1}
+.peer-info{flex:1}
+.self-info{flex:1;justify-content:flex-end}
 .avatar{
     width:36px;
     height:36px;
@@ -158,12 +207,12 @@ body{
     align-items:center;
     justify-content:center;
     font-size:1rem;
-    font-weight:450;
+    font-weight:500;
     color:#5a5a5a;
     text-transform:uppercase;
+    overflow:hidden;
     cursor:pointer;
     flex-shrink:0;
-    overflow:hidden;
 }
 .avatar img{
     width:100%;
@@ -173,49 +222,57 @@ body{
 .info-text{
     display:flex;
     flex-direction:column;
-    height:36px;
     min-width:0;
 }
 .peer-info .info-text{align-items:flex-start}
 .self-info .info-text{align-items:flex-end}
 .name{
     font-size:var(--name-font-size,.8rem);
-    font-weight:500;
+    font-weight:600;
     color:#5a5a5a;
     cursor:pointer;
     padding:2px 4px;
     border-radius:12px;
+    max-width:120px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
-.name:hover{background:rgba(225,178,178,.2)}
+.name:hover{background:rgba(225,178,178,.16)}
 .status{
-    font-size:.55rem;
+    font-size:.58rem;
     color:#8a8a8a;
     cursor:pointer;
-    padding:0 4px;
-    border-radius:8px;
+    padding:1px 4px;
+    border-radius:10px;
+    max-width:140px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
-.status:hover{background:rgba(225,178,178,.1)}
+.status:hover{background:rgba(225,178,178,.12)}
 .center-icons{
     display:flex;
     gap:8px;
-    margin:0 4px;
+    margin:0 6px;
 }
 .icon-btn{
-    background:transparent;
-    border:none;
-    font-size:1.2rem;
-    color:#8a8a8a;
-    cursor:pointer;
     width:36px;
     height:36px;
+    border:none;
     border-radius:50%;
+    background:transparent;
+    color:#8a8a8a;
+    cursor:pointer;
+    font-size:1.1rem;
     transition:.2s;
 }
-.icon-btn:hover{background:rgba(225,178,178,.3)}
+.icon-btn:hover{background:rgba(225,178,178,.28)}
 
-/* ---------------- 消息区域 ---------------- */
+/* messages */
 .messages-container{
     flex:1;
+    min-height:0;
     overflow-y:auto;
     padding:16px;
     display:flex;
@@ -224,7 +281,6 @@ body{
     position:relative;
     isolation:isolate;
     background:#f1f5f6;
-    transition:background-color .3s;
 }
 .messages-container::before{
     content:"";
@@ -239,66 +295,58 @@ body{
     filter:blur(var(--chat-bg-blur,0px));
     transform:scale(1.05);
 }
-.messages-container>*{
-    position:relative;
-    z-index:1;
-}
+.messages-container>*{position:relative;z-index:1}
 .messages-container::-webkit-scrollbar{width:3px}
 .messages-container::-webkit-scrollbar-track{background:#dbe1e2}
 .messages-container::-webkit-scrollbar-thumb{background:#b6c4cb;border-radius:4px}
-
-.message-row{
-    display:flex;
-    width:100%;
-}
+.message-row{display:flex;width:100%}
 .message-row.me{justify-content:flex-end}
 .message-row.contact{justify-content:flex-start}
 .message-bubble{
-    max-width:75%;
+    max-width:76%;
     padding:8px 12px;
     border-radius:18px;
-    word-wrap:break-word;
-    backdrop-filter:blur(2px);
     font-size:var(--bubble-font-size,.85rem);
     cursor:pointer;
-    transition:background .1s,color .1s,transform .08s;
+    word-break:break-word;
+    transition:transform .08s, background .15s, color .15s;
 }
-.message-bubble:active{
-    transform:scale(.99);
+.message-bubble:active{transform:scale(.99)}
+.message-bubble.sticker-bubble{
+    padding:6px 6px 8px;
+}
+.message-text{
+    white-space:pre-wrap;
+}
+.message-sticker{
+    display:block;
+    width:min(46vw,180px);
+    max-width:100%;
+    border-radius:16px;
+    background:#fff;
 }
 .quote-indicator{
     font-size:calc(var(--bubble-font-size,.85rem) * .9);
     color:#8a8a8a;
     border-left:2px solid #e1b2b2;
     padding-left:6px;
-    margin-bottom:4px;
+    margin-bottom:5px;
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
 }
 .message-time{
+    margin-top:5px;
     font-size:calc(var(--bubble-font-size,.85rem) * .7);
     color:#8a8a8a;
-    text-align:right;
     display:flex;
     align-items:center;
     justify-content:flex-end;
     gap:4px;
-    margin-top:4px;
 }
-.receipt{
-    font-size:calc(var(--bubble-font-size,.85rem) * .9);
-}
-.receipt.read{
-    color:#5a9eff;
-}
-.typing-indicator{
-    opacity:0;
-    transition:opacity .2s;
-}
-.typing-indicator.show{
-    opacity:1;
-}
+.receipt.read{color:#5a9eff}
+.typing-indicator{opacity:0;transition:opacity .2s}
+.typing-indicator.show{opacity:1}
 .typing-bubble{
     background:rgba(219,229,241,.8);
     padding:8px 16px;
@@ -324,239 +372,388 @@ body{
     font-size:.95rem;
 }
 
-/* ---------------- 底部输入 ---------------- */
+/* footer */
 .chat-footer{
-    padding:10px 16px;
+    flex-shrink:0;
+    padding:8px 12px calc(10px + env(safe-area-inset-bottom));
     background:var(--header-color,#d2e6ec);
     border-top:1px solid #c0d4db;
     display:flex;
-    gap:10px;
+    flex-direction:column;
+    gap:8px;
+}
+.quote-preview{
+    display:none;
     align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    background:rgba(255,255,255,.65);
+    border:1px solid rgba(184,207,216,.9);
+    border-radius:16px;
+    padding:8px 10px;
+}
+.quote-preview.show{display:flex}
+.quote-preview-main{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    min-width:0;
+}
+.quote-preview-main i{
+    color:#b38585;
+    margin-top:2px;
+}
+.quote-preview-title{
+    font-size:.68rem;
+    color:#8a8a8a;
+}
+.quote-preview-text{
+    font-size:.8rem;
+    color:#4d4943;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:70vw;
+}
+.quote-preview-close{
+    border:none;
+    background:transparent;
+    width:28px;
+    height:28px;
+    border-radius:50%;
+    cursor:pointer;
+    color:#8a8a8a;
     flex-shrink:0;
-    transition:background-color .2s;
+}
+.quote-preview-close:hover{background:rgba(225,178,178,.2)}
+.footer-main{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
 }
 .chat-footer input{
     flex:1;
-    background:rgba(255,255,255,.8);
+    min-width:0;
+    background:rgba(255,255,255,.84);
     border:1px solid #b8cfd8;
     border-radius:40px;
     padding:10px 16px;
     font-size:var(--bubble-font-size,.85rem);
     outline:none;
 }
-.chat-footer button{
-    background:#d1d1d1;
-    border:none;
-    border-radius:50%;
+.footer-btn{
     width:44px;
     height:44px;
-    font-size:1.1rem;
+    border:none;
+    border-radius:50%;
+    background:#d1d1d1;
     cursor:pointer;
+    font-size:1.05rem;
+    color:#5a5a5a;
+    flex-shrink:0;
 }
-.chat-footer button:hover{background:#e1b2b2}
-.chat-footer button:disabled,
-.panel button:disabled{
-    opacity:.55;
-    cursor:not-allowed;
-}
+.footer-btn:hover{background:#e1b2b2;color:#fff}
+.footer-btn:disabled,.panel button:disabled{opacity:.55;cursor:not-allowed}
 
-/* ---------------- 浮层 ---------------- */
+/* overlays */
 .overlay{
     position:absolute;
     inset:0;
-    background:rgba(0,0,0,.1);
-    backdrop-filter:blur(2px);
+    z-index:2000;
     display:flex;
     align-items:center;
     justify-content:center;
-    z-index:2000;
+    background:rgba(0,0,0,.1);
+    backdrop-filter:blur(2px);
     visibility:hidden;
     opacity:0;
-    transition:.2s;
+    transition:.22s;
 }
-.overlay.show{
-    visibility:visible;
-    opacity:1;
-}
+.overlay.show{visibility:visible;opacity:1}
 .panel{
-    width:380px;
-    max-width:92%;
-    max-height:82vh;
-    background:#f1f5f6;
+    width:390px;
+    max-width:94%;
+    max-height:84vh;
+    padding:18px;
     border-radius:28px;
-    padding:20px;
-    overflow-y:auto;
+    background:#f1f5f6;
     border:1px solid #d2e6ec;
+    overflow-y:auto;
 }
 .panel-header{
     display:flex;
-    justify-content:space-between;
     align-items:center;
-    margin-bottom:16px;
+    justify-content:space-between;
     color:#5a5a5a;
-    font-weight:500;
+    font-weight:600;
+    margin-bottom:14px;
 }
 .panel-header button{
-    background:transparent;
     border:none;
+    background:transparent;
     color:#8a8a8a;
     cursor:pointer;
     font-size:1.2rem;
 }
-.panel-header button:hover{
-    color:#b34e4e;
-}
+.panel-header button:hover{color:#b34e4e}
 .panel-footer{
     margin-top:16px;
     display:flex;
-    justify-content:space-between;
     gap:10px;
     flex-wrap:wrap;
 }
 .panel-footer button{
-    background:#d1d1d1;
     border:none;
+    background:#d1d1d1;
     border-radius:30px;
-    padding:8px 20px;
+    padding:8px 18px;
     cursor:pointer;
 }
 .panel-footer button:hover{
     background:#e1b2b2;
     color:#fff;
 }
-
-/* ---------------- 通用输入 ---------------- */
-#new-wordcard-input,
-#new-status,
-#new-wordcard-group,
-#wordcard-search{
+.soft-tip{
+    color:#8a8a8a;
+    font-size:.76rem;
+}
+.soft-input{
+    width:100%;
     border:1px solid #d2e6ec;
+    background:#fff;
     border-radius:20px;
+    padding:10px 12px;
+    outline:none;
+}
+.flex-row{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+.flex-row .soft-input{flex:1}
+.soft-select{
+    border:1px solid #d2e6ec;
+    border-radius:18px;
     padding:10px 12px;
     background:#fff;
     outline:none;
 }
-#new-wordcard-input,
-#new-status{
-    flex:1;
-}
-#wordcard-search{
-    width:100%;
-    margin-bottom:12px;
-}
-#add-wordcard,
-#add-status,
-#new-contact,
-#upload-wordcard,
-#export-wordcard,
-#reset-bg,
-#draw-one,
-#draw-three{
-    background:#d1d1d1;
+.soft-btn{
     border:none;
-    border-radius:20px;
+    background:#d1d1d1;
+    border-radius:18px;
     padding:10px 14px;
     cursor:pointer;
 }
-#add-wordcard:hover,
-#add-status:hover,
-#new-contact:hover,
-#upload-wordcard:hover,
-#export-wordcard:hover,
-#reset-bg:hover,
-#draw-one:hover,
-#draw-three:hover{
+.soft-btn:hover{
     background:#e1b2b2;
     color:#fff;
 }
 
-/* ---------------- 字卡库分组 ---------------- */
-.group-tabs{
+/* settings */
+.double-buttons{
     display:flex;
-    overflow-x:auto;
-    gap:8px;
-    margin-bottom:16px;
-    padding-bottom:8px;
-    scrollbar-width:thin;
+    gap:12px;
+    margin:18px 0;
+    flex-wrap:wrap;
 }
-.group-tabs::-webkit-scrollbar{height:2px}
-.group-tab{
-    background:rgba(210,230,236,.6);
-    border-radius:40px;
-    padding:6px 14px;
-    font-size:.8rem;
+.big-icon-btn{
+    flex:1;
+    min-width:100px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    border:none;
+    background:#d2e6ec;
+    border-radius:20px;
+    padding:16px 8px;
     cursor:pointer;
-    display:inline-flex;
+}
+.big-icon-btn:hover{
+    background:#e1b2b2;
+    color:#fff;
+}
+.slider-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:12px 0;
+}
+.slider-row label{width:88px;flex-shrink:0}
+.color-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:10px 0;
+}
+.color-row label{width:78px;flex-shrink:0}
+.theme-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin:14px 0;
+}
+.theme-item{
+    aspect-ratio:1/1;
+    border-radius:12px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:.76rem;
+    text-shadow:0 0 2px rgba(0,0,0,.3);
+}
+.receipt-options{
+    display:flex;
+    gap:14px;
+    margin:12px 0;
+    flex-wrap:wrap;
+}
+.receipt-option{
+    display:flex;
     align-items:center;
     gap:6px;
-    flex-shrink:0;
-}
-.group-tab.active{
-    background:#e1b2b2;
-    color:#fff;
-}
-.group-tab .group-actions{
-    display:none;
-    gap:6px;
-    margin-left:6px;
-}
-.group-tab.active .group-actions{
-    display:inline-flex;
-}
-.group-actions i{
     cursor:pointer;
-    font-size:.7rem;
+    padding:5px 12px;
+    border-radius:20px;
+    background:rgba(255,255,255,.5);
 }
-.add-group-btn{
-    background:transparent;
-    border:1px dashed #b8cfd8;
-    border-radius:40px;
-    padding:6px 12px;
-    cursor:pointer;
-    flex-shrink:0;
-}
-
-/* ---------------- 列表项 ---------------- */
-.wordcard-item,
-.contact-item,
-.status-item{
-    background:#ffffffc0;
-    border:1px solid #d2e6ec;
-    border-radius:24px;
-    padding:10px 14px;
+.receipt-option.selected{background:#e1b2b2;color:#fff}
+.receipt-option input{display:none}
+.switch-row{
     display:flex;
     align-items:center;
     justify-content:space-between;
-    margin-bottom:8px;
-    gap:8px;
+    gap:12px;
+    margin:12px 0;
 }
-.wordcard-text{
-    cursor:pointer;
+.switch{
+    position:relative;
+    width:44px;
+    height:24px;
+    display:inline-block;
+}
+.switch input{
+    opacity:0;
+    width:0;
+    height:0;
+}
+.switch .slider{
+    position:absolute;
+    inset:0;
+    background:#ccc;
+    border-radius:24px;
+    transition:.2s;
+}
+.switch .slider::before{
+    content:"";
+    position:absolute;
+    left:3px;
+    bottom:3px;
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    background:#fff;
+    transition:.2s;
+}
+.switch input:checked + .slider{
+    background:#e1b2b2;
+}
+.switch input:checked + .slider::before{
+    transform:translateX(20px);
+}
+
+/* list items */
+.wordcard-item,.contact-item,.status-item{
+    background:#ffffffc8;
+    border:1px solid #d2e6ec;
+    border-radius:24px;
+    padding:10px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    margin-bottom:8px;
+}
+.wordcard-item.selected{
+    border-color:#e1b2b2;
+    background:#fff7f7;
+}
+.wordcard-main{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
     flex:1;
 }
+.wordcard-check{
+    width:20px;
+    height:20px;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+}
+.wordcard-check.show{display:flex}
+.wordcard-check input{
+    width:16px;
+    height:16px;
+}
+.wordcard-text{
+    flex:1;
+    min-width:0;
+    cursor:pointer;
+}
+.wordcard-text-main{
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
 .wordcard-group-badge{
-    font-size:.65rem;
+    margin-left:8px;
+    font-size:.66rem;
     background:#d2e6ec;
     padding:2px 8px;
     border-radius:20px;
-    margin-left:8px;
 }
-.wordcard-item button,
-.contact-item button,
-.status-item button{
-    background:transparent;
-    border:none;
+.wordcard-actions,.contact-actions{
+    display:flex;
+    align-items:center;
+    gap:4px;
+}
+.wordcard-item button,.contact-item button,.status-item button{
     width:32px;
     height:32px;
+    border:none;
     border-radius:50%;
+    background:transparent;
     cursor:pointer;
     color:#5a5a5a;
+    flex-shrink:0;
 }
-.wordcard-item button:hover,
-.contact-item button:hover,
-.status-item button:hover{
-    background:rgba(225,178,178,.25);
+.wordcard-item button:hover,.contact-item button:hover,.status-item button:hover{
+    background:rgba(225,178,178,.24);
 }
+.wordcard-batchbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+    margin:0 0 12px;
+}
+.wordcard-batchbar .soft-btn{
+    padding:8px 12px;
+    border-radius:16px;
+}
+.wordcard-batch-count{
+    margin-left:auto;
+    font-size:.76rem;
+    color:#8a8a8a;
+}
+
 .contact-item{
     align-items:flex-start;
 }
@@ -575,33 +772,309 @@ body{
 .contact-sub{
     font-size:.72rem;
     color:#8a8a8a;
-    margin-top:2px;
-}
-.contact-actions{
-    display:flex;
-    align-items:center;
-    gap:4px;
+    margin-top:3px;
 }
 .pin-contact.active{
     color:#b34e4e;
     background:rgba(225,178,178,.22);
 }
 
-/* ---------------- 塔罗牌 ---------------- */
+/* sticker */
+.sticker-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:12px;
+    flex-wrap:wrap;
+}
+.upload-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:18px;
+    background:#d2e6ec;
+    cursor:pointer;
+}
+.upload-chip:hover{
+    background:#e1b2b2;
+    color:#fff;
+}
+.sticker-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+}
+.sticker-item{
+    position:relative;
+    background:#fff;
+    border:1px solid #d2e6ec;
+    border-radius:18px;
+    overflow:hidden;
+    cursor:pointer;
+}
+.sticker-item:hover{
+    transform:translateY(-1px);
+    box-shadow:0 6px 16px rgba(0,0,0,.08);
+}
+.sticker-thumb{
+    display:block;
+    width:100%;
+    aspect-ratio:1/1;
+    object-fit:cover;
+    background:#f6f6f6;
+}
+.sticker-name{
+    padding:6px 8px 8px;
+    font-size:.72rem;
+    text-align:center;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    color:#5a5a5a;
+}
+.sticker-delete{
+    position:absolute;
+    top:6px;
+    right:6px;
+    width:26px;
+    height:26px;
+    border:none;
+    border-radius:50%;
+    background:rgba(0,0,0,.45);
+    color:#fff;
+    cursor:pointer;
+}
+.sticker-delete:hover{background:#b34e4e}
+.sticker-empty{
+    color:#8a8a8a;
+    text-align:center;
+    padding:26px 0;
+}
+
+/* message menu and group menu */
+.group-selector-menu{
+    position:fixed;
+    z-index:3000;
+    background:#fff;
+    border:1px solid #d2e6ec;
+    border-radius:18px;
+    box-shadow:0 8px 22px rgba(0,0,0,.14);
+    padding:8px;
+    min-width:150px;
+}
+.group-selector-menu button{
+    display:block;
+    width:100%;
+    border:none;
+    background:none;
+    text-align:left;
+    border-radius:14px;
+    padding:8px 12px;
+    cursor:pointer;
+}
+.group-selector-menu button:hover:not(:disabled){
+    background:#e1b2b2;
+    color:#fff;
+}
+.group-selector-menu button:disabled{
+    opacity:.6;
+    cursor:default;
+}
+.message-actions-menu{
+    position:fixed;
+    z-index:4000;
+    background:#fff;
+    border:1px solid #d2e6ec;
+    border-radius:18px;
+    padding:8px;
+    box-shadow:0 8px 20px rgba(0,0,0,.12);
+    min-width:170px;
+    display:none;
+    flex-direction:column;
+    gap:6px;
+}
+.message-actions-menu button{
+    width:100%;
+    border:none;
+    background:#f1f5f6;
+    color:#4a453e;
+    border-radius:14px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    text-align:left;
+    padding:10px 12px;
+}
+.message-actions-menu button:hover{
+    background:#e1b2b2;
+    color:#fff;
+}
+.message-actions-menu button.danger:hover{
+    background:#b34e4e;
+}
+
+/* group tabs */
+.group-tabs{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding-bottom:8px;
+    margin-bottom:12px;
+}
+.group-tabs::-webkit-scrollbar{height:2px}
+.group-tab{
+    background:rgba(210,230,236,.6);
+    border-radius:40px;
+    padding:6px 14px;
+    font-size:.8rem;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    white-space:nowrap;
+}
+.group-tab.active{
+    background:#e1b2b2;
+    color:#fff;
+}
+.group-tab .group-actions{
+    display:none;
+    gap:6px;
+    margin-left:4px;
+}
+.group-tab.active .group-actions{
+    display:inline-flex;
+}
+.group-actions i{cursor:pointer;font-size:.72rem}
+.add-group-btn{
+    border:1px dashed #b8cfd8;
+    border-radius:40px;
+    padding:6px 12px;
+    cursor:pointer;
+    white-space:nowrap;
+}
+
+/* tarot */
+.question-input{
+    width:100%;
+    padding:10px 12px;
+    border-radius:40px;
+    border:1px solid #d2e6ec;
+    margin:10px 0 12px;
+    outline:none;
+}
+.tarot-controls{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+.tarot-select{
+    border:1px solid #d2e6ec;
+    border-radius:18px;
+    background:#fff;
+    padding:10px 12px;
+    min-width:160px;
+    outline:none;
+}
+.tarot-draw-btn{
+    border:none;
+    background:#d1d1d1;
+    border-radius:20px;
+    padding:10px 16px;
+    cursor:pointer;
+}
+.tarot-draw-btn:hover{
+    background:#e1b2b2;
+    color:#fff;
+}
 .tarot-result{
+    margin-top:18px;
     display:flex;
     flex-wrap:wrap;
-    gap:20px;
     justify-content:center;
-    margin-top:20px;
+    gap:18px;
 }
+.tarot-shuffle-scene{
+    position:relative;
+    width:220px;
+    height:190px;
+    margin:8px auto 4px;
+}
+.shuffle-card{
+    position:absolute;
+    width:100px;
+    height:160px;
+    left:50%;
+    top:14px;
+    transform-origin:center;
+    border-radius:12px;
+    background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.18), transparent 42%),
+        linear-gradient(135deg,#74539b,#3f2a5d);
+    border:2px solid rgba(255,255,255,.25);
+    box-shadow:0 8px 16px rgba(0,0,0,.14);
+}
+.shuffle-card::before{
+    content:"";
+    position:absolute;
+    inset:10px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.26);
+}
+.shuffle-card.c1{animation:shuffle1 1.1s ease-in-out infinite alternate}
+.shuffle-card.c2{animation:shuffle2 1.15s ease-in-out infinite alternate}
+.shuffle-card.c3{animation:shuffle3 1.2s ease-in-out infinite alternate}
+.shuffle-card.c4{animation:shuffle4 1.25s ease-in-out infinite alternate}
+.shuffle-card.c5{animation:shuffle5 1.3s ease-in-out infinite alternate}
+@keyframes shuffle1{from{transform:translate(-56%,-2px) rotate(-20deg)}to{transform:translate(-72%,10px) rotate(-34deg)}}
+@keyframes shuffle2{from{transform:translate(-52%,0) rotate(-8deg)}to{transform:translate(-58%,18px) rotate(-15deg)}}
+@keyframes shuffle3{from{transform:translate(-50%,0) rotate(0deg)}to{transform:translate(-48%,18px) rotate(6deg)}}
+@keyframes shuffle4{from{transform:translate(-48%,0) rotate(10deg)}to{transform:translate(-38%,14px) rotate(18deg)}}
+@keyframes shuffle5{from{transform:translate(-46%,-2px) rotate(22deg)}to{transform:translate(-24%,8px) rotate(36deg)}}
+.tarot-spread{
+    display:grid;
+    gap:18px;
+    justify-content:center;
+}
+.tarot-spread.spread-single{
+    grid-template-columns:repeat(1,120px);
+}
+.tarot-spread.spread-line3{
+    grid-template-columns:repeat(3,120px);
+}
+.tarot-spread.spread-triangle{
+    grid-template-columns:repeat(2,120px);
+}
+.tarot-spread.spread-triangle .slot-1{
+    grid-column:1 / 3;
+    justify-self:center;
+}
+.tarot-spread.spread-cross{
+    grid-template-columns:repeat(3,120px);
+    grid-template-rows:repeat(3,auto);
+}
+.tarot-spread.spread-cross .slot-1{grid-column:2;grid-row:1}
+.tarot-spread.spread-cross .slot-2{grid-column:1;grid-row:2}
+.tarot-spread.spread-cross .slot-3{grid-column:2;grid-row:2}
+.tarot-spread.spread-cross .slot-4{grid-column:3;grid-row:2}
+.tarot-spread.spread-cross .slot-5{grid-column:2;grid-row:3}
 .tarot-card{
-    text-align:center;
     width:120px;
+    text-align:center;
     background:#fff9f0;
     border-radius:20px;
-    padding:12px 8px;
+    padding:10px 8px;
     box-shadow:0 8px 18px rgba(0,0,0,.1);
+}
+.tarot-slot{
+    font-size:.7rem;
+    color:#7b6e6e;
+    margin-bottom:8px;
 }
 .tarot-flip-wrap{
     width:100px;
@@ -630,7 +1103,7 @@ body{
 .tarot-back{
     background:
         radial-gradient(circle at 30% 30%, rgba(255,255,255,.18), transparent 45%),
-        linear-gradient(135deg, #74539b, #3f2a5d);
+        linear-gradient(135deg,#74539b,#3f2a5d);
     border:2px solid rgba(255,255,255,.25);
     display:flex;
     align-items:center;
@@ -648,10 +1121,6 @@ body{
     gap:10px;
     background:rgba(255,255,255,.06);
     color:#fff6d9;
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);
-}
-.tarot-back-inner i{
-    font-size:1.5rem;
 }
 .tarot-front{
     transform:rotateY(180deg);
@@ -678,246 +1147,81 @@ body{
     opacity:1;
     transform:translateY(0);
 }
-.tarot-card.revealed .tarot-hint{
-    opacity:.15;
-}
+.tarot-card.revealed .tarot-hint{opacity:.18}
 .tarot-name{
     margin-top:8px;
-    font-weight:500;
     font-size:.8rem;
+    font-weight:600;
 }
-.tarot-card .reversed{
-    color:#b34e4e;
-    font-size:.7rem;
+.tarot-reversed{
     margin-top:4px;
+    font-size:.7rem;
+    color:#b34e4e;
 }
 .tarot-change-image{
     margin-top:8px;
     border:none;
     background:#d2e6ec;
-    padding:6px 10px;
     border-radius:14px;
+    padding:6px 10px;
     cursor:pointer;
-    font-size:.7rem;
+    font-size:.72rem;
 }
 .tarot-change-image:hover{
     background:#e1b2b2;
     color:#fff;
 }
-.question-input{
-    width:100%;
-    padding:10px;
-    border-radius:40px;
-    border:1px solid #d2e6ec;
-    margin:12px 0;
-    outline:none;
-}
-.tarot-buttons{
-    display:flex;
-    gap:16px;
-    justify-content:center;
-}
 
-/* ---------------- 其它设置 ---------------- */
-.double-buttons{
-    display:flex;
-    gap:12px;
-    margin:20px 0;
-    flex-wrap:wrap;
-}
-.big-icon-btn{
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    background:#d2e6ec;
-    border:none;
-    border-radius:20px;
-    padding:16px 8px;
-    cursor:pointer;
-}
-.big-icon-btn:hover{
-    background:#e1b2b2;
-    color:#fff;
-}
-.slider-row{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin:12px 0;
-}
-.slider-row label{
-    width:80px;
-}
-.color-row{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin:8px 0;
-}
-.color-row label{
-    width:70px;
-}
-.theme-grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:10px;
-    margin:16px 0;
-}
-.theme-item{
-    aspect-ratio:1/1;
-    border-radius:12px;
-    border:2px solid transparent;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:.7rem;
-    color:#fff;
-    text-shadow:0 0 2px rgba(0,0,0,.3);
-}
-.receipt-options{
-    display:flex;
-    gap:20px;
-    margin:12px 0;
-}
-.receipt-option{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    cursor:pointer;
-    padding:4px 12px;
-    border-radius:20px;
-    background:rgba(255,255,255,.5);
-}
-.receipt-option.selected{
-    background:#e1b2b2;
-    color:#fff;
-}
-.receipt-option input{
-    display:none;
-}
-.switch-row{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin:12px 0;
-}
-.switch{
-    position:relative;
-    display:inline-block;
-    width:44px;
-    height:24px;
-}
-.switch input{
-    opacity:0;
-    width:0;
-    height:0;
-}
-.slider{
-    position:absolute;
-    cursor:pointer;
-    top:0;
-    left:0;
-    right:0;
-    bottom:0;
-    background-color:#ccc;
-    transition:.2s;
-    border-radius:24px;
-}
-.slider:before{
-    position:absolute;
-    content:"";
-    height:18px;
-    width:18px;
-    left:3px;
-    bottom:3px;
-    background-color:white;
-    transition:.2s;
-    border-radius:50%;
-}
-input:checked + .slider{
-    background-color:#e1b2b2;
-}
-input:checked + .slider:before{
-    transform:translateX(20px);
-}
-
-/* ---------------- 菜单 ---------------- */
-.group-selector-menu{
-    position:fixed;
-    background:#fff;
-    border-radius:20px;
-    box-shadow:0 4px 12px rgba(0,0,0,.15);
-    padding:8px;
-    z-index:3000;
-    border:1px solid #d2e6ec;
-    min-width:140px;
-}
-.group-selector-menu button{
-    display:block;
-    width:100%;
-    text-align:left;
-    background:none;
-    border:none;
-    padding:8px 12px;
-    border-radius:16px;
-    cursor:pointer;
-}
-.group-selector-menu button:hover:not(:disabled){
-    background:#e1b2b2;
-    color:#fff;
-}
-.group-selector-menu button:disabled{
-    opacity:.6;
-    cursor:default;
-}
-
-.message-actions-menu{
-    position:fixed;
-    z-index:4000;
-    background:#fff;
-    border:1px solid #d2e6ec;
-    border-radius:18px;
-    padding:8px;
-    box-shadow:0 8px 20px rgba(0,0,0,.12);
-    min-width:160px;
-    flex-direction:column;
-    gap:6px;
-}
-.message-actions-menu button{
-    background:#f1f5f6;
-    border:none;
-    width:100%;
-    height:auto;
-    border-radius:14px;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    padding:10px 12px;
-    text-align:left;
-    color:#4a453e;
-}
-.message-actions-menu button:hover{
-    background:#e1b2b2;
-    color:#fff;
-}
-.message-actions-menu button.danger:hover{
-    background:#b34e4e;
-    color:#fff;
-}
-
-@media (max-width:480px){
+/* mobile */
+@media (max-width:720px){
     .panel{
-        width:94%;
+        width:95%;
+        max-height:88vh;
         padding:16px;
+        border-radius:24px;
     }
-    .chat-header{
-        padding:8px 10px;
+    .name{max-width:88px}
+    .status{max-width:100px}
+    .center-icons{
+        gap:4px;
+        margin:0 4px;
+    }
+    .icon-btn{
+        width:32px;
+        height:32px;
+        font-size:1rem;
     }
     .messages-container{
         padding:12px;
+    }
+    .message-bubble{
+        max-width:85%;
+    }
+    .message-sticker{
+        width:min(54vw,170px);
+    }
+    .sticker-grid{
+        grid-template-columns:repeat(3,1fr);
+    }
+    .theme-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+    .tarot-spread.spread-line3{
+        grid-template-columns:repeat(2,120px);
+    }
+    .tarot-spread.spread-line3 .slot-3{
+        grid-column:1 / 3;
+        justify-self:center;
+    }
+    .tarot-spread.spread-cross{
+        grid-template-columns:repeat(3,100px);
+    }
+    .tarot-card{
+        width:100px;
+    }
+    .tarot-flip-wrap{
+        width:84px;
+        height:136px;
     }
 }
 </style>
@@ -938,7 +1242,6 @@ input:checked + .slider:before{
 (function(){
 'use strict';
 
-/* ----------------------------- 塔罗牌库 78张 ----------------------------- */
 const major = ["愚者","魔术师","女祭司","女皇","皇帝","教皇","恋人","战车","力量","隐士","命运之轮","正义","倒吊人","死神","节制","恶魔","高塔","星星","月亮","太阳","审判","世界"];
 const suits = { wands:"权杖", cups:"圣杯", swords:"宝剑", pentacles:"星币" };
 const numbers = ["1","2","3","4","5","6","7","8","9","10"];
@@ -950,63 +1253,21 @@ Object.values(suits).forEach(suit=>{
 });
 const FULL_TAROT = [...major, ...minor];
 
-/* ----------------------------- 启动页图标与配色 ----------------------------- */
 const loaderPalettes = [
     { bg1:"#d8d1c9", bg2:"#ece5de", text:"#6b615a", accent:"#b39b8d", halo:"rgba(179,155,141,.24)", halo2:"rgba(156,165,153,.18)" },
     { bg1:"#d7dcd5", bg2:"#edf1eb", text:"#617063", accent:"#9fac9a", halo:"rgba(159,172,154,.24)", halo2:"rgba(181,167,151,.18)" },
     { bg1:"#d9d3dc", bg2:"#eeeaf0", text:"#6b6470", accent:"#aa9fb5", halo:"rgba(170,159,181,.24)", halo2:"rgba(190,177,168,.18)" },
     { bg1:"#ddd3cd", bg2:"#f1ebe6", text:"#6f645d", accent:"#b59c90", halo:"rgba(181,156,144,.24)", halo2:"rgba(170,183,180,.18)" },
-    { bg1:"#d4d9d8", bg2:"#eaeeee", text:"#5f6968", accent:"#93a3a1", halo:"rgba(147,163,161,.24)", halo2:"rgba(190,178,165,.18)" },
-    { bg1:"#ddd6cf", bg2:"#f1ebe5", text:"#6d655f", accent:"#b8a597", halo:"rgba(184,165,151,.24)", halo2:"rgba(165,175,156,.18)" },
-    { bg1:"#d8d4cf", bg2:"#efebe7", text:"#6a635d", accent:"#a89d95", halo:"rgba(168,157,149,.24)", halo2:"rgba(174,183,176,.18)" },
-    { bg1:"#d7d7cf", bg2:"#eeeee8", text:"#67675f", accent:"#a6aa95", halo:"rgba(166,170,149,.24)", halo2:"rgba(177,164,154,.18)" }
+    { bg1:"#d4d9d8", bg2:"#eaeeee", text:"#5f6968", accent:"#93a3a1", halo:"rgba(147,163,161,.24)", halo2:"rgba(190,178,165,.18)" }
 ];
-
 const loaderIcons = [
-`<svg viewBox="0 0 64 64" aria-hidden="true">
-    <path d="M26 38l-6 6a10 10 0 1 1-14-14l10-10a10 10 0 0 1 14 0"/>
-    <path d="M38 26l6-6a10 10 0 1 1 14 14L48 44a10 10 0 0 1-14 0"/>
-    <path d="M24 40l16-16"/>
-</svg>`,
-`<svg viewBox="0 0 64 64" aria-hidden="true">
-    <path d="M56 10 8 30l18 6 6 18 24-44Z"/>
-    <path d="M26 36 56 10"/>
-</svg>`,
-`<svg viewBox="0 0 64 64" aria-hidden="true">
-    <path d="M49 14c-15 2-26 10-32 23-2 4-3 8-2 13 5 1 9 0 13-2 13-6 21-17 23-32Z"/>
-    <path d="M20 45c8-6 16-14 22-25"/>
-</svg>`,
-`<svg viewBox="0 0 64 64" aria-hidden="true">
-    <path d="M20 48h25a9 9 0 0 0 1-18 14 14 0 0 0-27-4A11 11 0 0 0 20 48Z"/>
-</svg>`,
-`<svg viewBox="0 0 64 64" aria-hidden="true">
-    <path d="M41 11a22 22 0 1 0 12 40A20 20 0 1 1 41 11Z"/>
-    <path d="M44 20l2 4 4 2-4 2-2 4-2-4-4-2 4-2 2-4Z"/>
-</svg>`,
-`<svg viewBox="0 0 64 64" aria-hidden="true">
-    <path d="M13 17h38a7 7 0 0 1 7 7v16a7 7 0 0 1-7 7H29l-11 8v-8h-5a7 7 0 0 1-7-7V24a7 7 0 0 1 7-7Z"/>
-    <path d="M19 30h26"/>
-    <path d="M19 37h17"/>
-</svg>`,
-`<svg viewBox="0 0 64 64" aria-hidden="true">
-    <path d="M32 12v10"/>
-    <path d="M32 42v10"/>
-    <path d="M12 32h10"/>
-    <path d="M42 32h10"/>
-    <path d="M18 18l7 7"/>
-    <path d="M39 39l7 7"/>
-    <path d="M18 46l7-7"/>
-    <path d="M39 25l7-7"/>
-    <circle cx="32" cy="32" r="7"/>
-</svg>`,
-`<svg viewBox="0 0 64 64" aria-hidden="true">
-    <path d="M32 50V31"/>
-    <path d="M32 34c-8 0-14-6-14-14 8 0 14 6 14 14Z"/>
-    <path d="M32 28c0-9 7-16 16-16 0 9-7 16-16 16Z"/>
-</svg>`
+`<svg viewBox="0 0 64 64"><path d="M26 38l-6 6a10 10 0 1 1-14-14l10-10a10 10 0 0 1 14 0"/><path d="M38 26l6-6a10 10 0 1 1 14 14L48 44a10 10 0 0 1-14 0"/><path d="M24 40l16-16"/></svg>`,
+`<svg viewBox="0 0 64 64"><path d="M56 10 8 30l18 6 6 18 24-44Z"/><path d="M26 36 56 10"/></svg>`,
+`<svg viewBox="0 0 64 64"><path d="M49 14c-15 2-26 10-32 23-2 4-3 8-2 13 5 1 9 0 13-2 13-6 21-17 23-32Z"/><path d="M20 45c8-6 16-14 22-25"/></svg>`,
+`<svg viewBox="0 0 64 64"><path d="M20 48h25a9 9 0 0 0 1-18 14 14 0 0 0-27-4A11 11 0 0 0 20 48Z"/></svg>`,
+`<svg viewBox="0 0 64 64"><path d="M13 17h38a7 7 0 0 1 7 7v16a7 7 0 0 1-7 7H29l-11 8v-8h-5a7 7 0 0 1-7-7V24a7 7 0 0 1 7-7Z"/><path d="M19 30h26"/><path d="M19 37h17"/></svg>`
 ];
 
-/* ----------------------------- 默认设置 ----------------------------- */
 const defaultSettings = {
     themeIndex:0,
     customColors:{
@@ -1025,7 +1286,8 @@ const defaultSettings = {
     minWait:1,
     maxWait:120,
     nameFontSize:.8,
-    bubbleFontSize:.85
+    bubbleFontSize:.85,
+    robotStickerEnabled:true
 };
 
 const themes = [
@@ -1040,22 +1302,44 @@ const themes = [
     { name:"岩灰", myBubble:"#dad0c4", otherBubble:"#c6bbb0", myText:"#52473c", otherText:"#42392f", headerColor:"#dcd3c9" }
 ];
 
-/* ----------------------------- 全局状态 ----------------------------- */
+const tarotSpreads = {
+    single:{label:"单张启示", count:1, className:"single", slots:["启示"]},
+    line3:{label:"时间之流（三张）", count:3, className:"line3", slots:["过去","现在","未来"]},
+    triangle:{label:"三角牌阵（三张）", count:3, className:"triangle", slots:["核心","外在","指引"]},
+    cross5:{label:"十字牌阵（五张）", count:5, className:"cross", slots:["上方","左侧","核心","右侧","下方"]}
+};
+
 let contacts = [];
 let selectedContactId = null;
 let wordCards = [];
 let groups = [];
 let statuses = [];
 let settings = JSON.parse(JSON.stringify(defaultSettings));
+let stickers = [];
 let quotedMessage = null;
 let currentGroupFilter = "all";
 let currentStatusTarget = "peer";
 let wordcardSearchKeyword = "";
+let wordcardSelectionMode = false;
+let selectedWordCardIds = new Set();
 let pendingReplies = 0;
 let activeMenuCloseHandler = null;
 let startupHidden = false;
+let tarotDrawing = false;
 
-/* ----------------------------- 工具函数 ----------------------------- */
+const $ = id => document.getElementById(id);
+
+function updateAppHeight(){
+    const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    document.documentElement.style.setProperty("--app-height", `${Math.round(h)}px`);
+}
+window.addEventListener("resize", updateAppHeight);
+window.addEventListener("orientationchange", updateAppHeight);
+if(window.visualViewport){
+    window.visualViewport.addEventListener("resize", updateAppHeight);
+}
+updateAppHeight();
+
 function readJSON(key, fallback){
     try{
         const raw = localStorage.getItem(key);
@@ -1097,6 +1381,17 @@ function hexToRgba(hex, op){
 function randomOrientation(){
     return Math.random() < .5 ? "正位" : "逆位";
 }
+function pickDifferentIndex(length, storageKey){
+    const prev = Number(localStorage.getItem(storageKey));
+    let idx = Math.floor(Math.random() * length);
+    if(length > 1){
+        while(idx === prev){
+            idx = Math.floor(Math.random() * length);
+        }
+    }
+    localStorage.setItem(storageKey, String(idx));
+    return idx;
+}
 function getTarotImage(name){
     return localStorage.getItem(`tarot_img_${name}`) || `https://picsum.photos/seed/${encodeURIComponent(name)}/100/160`;
 }
@@ -1124,78 +1419,115 @@ function getSortedContacts(){
 function touchContact(contact){
     if(contact) contact.lastActive = new Date().toISOString();
 }
-function refreshInputPlaceholder(){
-    const input = document.getElementById("message-input");
-    if(!input) return;
-    if(!selectedContactId){
-        input.placeholder = "请先添加联系人";
-    }else if(quotedMessage){
-        input.placeholder = "引用中...";
-    }else{
-        input.placeholder = "写一句悄悄话...";
-    }
+function downloadJson(filename, data){
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 800);
 }
-function saveAll(){
-    localStorage.setItem("orchard_contacts", JSON.stringify(contacts));
-    localStorage.setItem("orchard_selected", selectedContactId || "");
-    localStorage.setItem("orchard_wordcards_v2", JSON.stringify(wordCards));
-    localStorage.setItem("orchard_groups", JSON.stringify(groups));
-    localStorage.setItem("orchard_statuses", JSON.stringify(statuses));
-    localStorage.setItem("orchard_settings", JSON.stringify(settings));
+
+function makeStickerSvg(text,bg,fg,sub=""){
+    const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320">
+        <rect width="320" height="320" rx="44" fill="${bg}"/>
+        <circle cx="78" cy="76" r="34" fill="rgba(255,255,255,.22)"/>
+        <circle cx="250" cy="66" r="18" fill="rgba(255,255,255,.16)"/>
+        <circle cx="236" cy="250" r="30" fill="rgba(255,255,255,.14)"/>
+        <text x="160" y="158" text-anchor="middle" font-size="64" font-family="Arial, sans-serif" font-weight="700" fill="${fg}">${text}</text>
+        <text x="160" y="210" text-anchor="middle" font-size="26" font-family="Arial, sans-serif" fill="${fg}" opacity=".82">${sub}</text>
+    </svg>`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
-function getCurrentColors(){
-    if(settings.themeIndex !== -1 && themes[settings.themeIndex]) return themes[settings.themeIndex];
-    return settings.customColors;
+function defaultStickerPack(){
+    return [
+        {id:"st_builtin_1", name:"抱抱", src:makeStickerSvg("抱抱","#e7d3cf","#6c5a56","来抱一下"), builtin:true},
+        {id:"st_builtin_2", name:"晚安", src:makeStickerSvg("晚安","#d5ddd6","#5c6960","早点休息"), builtin:true},
+        {id:"st_builtin_3", name:"想你", src:makeStickerSvg("想你","#ddd4e2","#665c70","偷偷想"), builtin:true},
+        {id:"st_builtin_4", name:"摸摸", src:makeStickerSvg("摸摸","#e6ddd1","#6c635a","不难过"), builtin:true},
+        {id:"st_builtin_5", name:"等你", src:makeStickerSvg("等你","#d4dddd","#5f6668","在这里"), builtin:true},
+        {id:"st_builtin_6", name:"开心", src:makeStickerSvg("开心","#e8dfd6","#6b6158","今天也好"), builtin:true}
+    ];
 }
-function syncColorInputs(){
-    const colors = getCurrentColors();
-    const pairs = {
-        "my-bubble-color": colors.myBubble,
-        "other-bubble-color": colors.otherBubble,
-        "my-text-color": colors.myText,
-        "other-text-color": colors.otherText,
-        "ui-color": colors.headerColor || defaultSettings.customColors.headerColor
+function normalizeSticker(st, idx){
+    if(!st || !st.src) return null;
+    return {
+        id: st.id || uid("st") + "_" + idx,
+        name: String(st.name || "表情包").trim() || "表情包",
+        src: st.src,
+        builtin: !!st.builtin
     };
-    Object.entries(pairs).forEach(([id,val])=>{
-        const el = document.getElementById(id);
-        if(el) el.value = val;
-    });
-    const op = document.getElementById("bubble-opacity");
-    const opVal = document.getElementById("bubble-opacity-val");
-    if(op) op.value = settings.customColors.bubbleOpacity;
-    if(opVal) opVal.textContent = settings.customColors.bubbleOpacity;
 }
-function updateReceiptOptionsUI(){
-    document.querySelectorAll(".receipt-option").forEach(opt=>{
-        const input = opt.querySelector("input");
-        opt.classList.toggle("selected", !!(input && input.checked));
-    });
+function normalizeQuote(q){
+    if(!q) return null;
+    const type = q.type || (q.stickerSrc ? "sticker" : "text");
+    return {
+        type,
+        text: String(q.text || ""),
+        stickerName: String(q.stickerName || q.name || "表情包"),
+        stickerSrc: q.stickerSrc || q.src || null,
+        sender: q.sender || "contact"
+    };
 }
-function openOverlay(id){
-    const el = document.getElementById(id);
-    if(el) el.classList.add("show");
+function normalizeMessage(m){
+    const type = m.type || (m.stickerSrc ? "sticker" : "text");
+    return {
+        sender: m.sender === "me" ? "me" : "contact",
+        type,
+        text: String(m.text || ""),
+        stickerSrc: type === "sticker" ? (m.stickerSrc || m.src || null) : null,
+        stickerName: String(m.stickerName || m.name || "表情包"),
+        time: m.time || getCurrentTime(),
+        quote: normalizeQuote(m.quote),
+        receipt: m.receipt || null,
+        edited: !!m.edited
+    };
 }
-function closeOverlay(id){
-    const el = document.getElementById(id);
-    if(el) el.classList.remove("show");
+function normalizeContact(c){
+    const now = new Date().toISOString();
+    return {
+        id: c.id || uid("c"),
+        peerName: c.peerName || "新朋友",
+        peerAvatar: c.peerAvatar || null,
+        peerStatus: c.peerStatus || "在线",
+        selfName: c.selfName || "念培",
+        selfAvatar: c.selfAvatar || null,
+        selfStatus: c.selfStatus || "想喝椰汁",
+        createdAt: c.createdAt || now,
+        lastActive: c.lastActive || c.createdAt || now,
+        pinned: !!c.pinned,
+        messages: Array.isArray(c.messages) ? c.messages.map(normalizeMessage) : []
+    };
 }
-function hideMsgMenu(){
-    const menu = document.getElementById("message-actions-menu");
-    if(menu){
-        menu.style.display = "none";
-        menu.style.visibility = "";
-    }
-    if(activeMenuCloseHandler){
-        window.removeEventListener("click", activeMenuCloseHandler, true);
-        activeMenuCloseHandler = null;
-    }
+function getQuoteDisplayText(q){
+    if(!q) return "";
+    return q.type === "sticker"
+        ? `[表情包] ${q.stickerName || "表情包"}`
+        : q.text || "";
 }
-function uniqueGroupId(preferredId){
-    if(preferredId && !groups.some(g=>g.id === preferredId)) return preferredId;
+function getMessagePreview(msg){
+    return msg.type === "sticker"
+        ? `[表情包] ${msg.stickerName || "表情包"}`
+        : msg.text || "";
+}
+function currentQuotePayload(){
+    if(!quotedMessage) return null;
+    return {
+        type: quotedMessage.type,
+        text: quotedMessage.text || "",
+        stickerName: quotedMessage.stickerName || "表情包",
+        stickerSrc: quotedMessage.stickerSrc || null,
+        sender: quotedMessage.sender || "contact"
+    };
+}
+function uniqueGroupId(preferred){
+    if(preferred && !groups.some(g=>g.id === preferred)) return preferred;
     return uid("g");
 }
-function uniqueWordCardId(preferredId){
-    if(preferredId && !wordCards.some(c=>c.id === preferredId)) return preferredId;
+function uniqueWordCardId(preferred){
+    if(preferred && !wordCards.some(c=>c.id === preferred)) return preferred;
     return uid("wc");
 }
 function ensureGroupByName(name, preferredId){
@@ -1204,1081 +1536,49 @@ function ensureGroupByName(name, preferredId){
     const existing = groups.find(g=>g.name === trimmed);
     if(existing) return existing.id;
     const id = uniqueGroupId(preferredId);
-    groups.push({ id, name: trimmed });
+    groups.push({id,name:trimmed});
     return id;
 }
-function downloadJson(filename, data){
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type:"application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    setTimeout(()=>URL.revokeObjectURL(url), 800);
+
+function saveAll(){
+    localStorage.setItem("orchard_contacts", JSON.stringify(contacts));
+    localStorage.setItem("orchard_selected", selectedContactId || "");
+    localStorage.setItem("orchard_wordcards_v2", JSON.stringify(wordCards));
+    localStorage.setItem("orchard_groups", JSON.stringify(groups));
+    localStorage.setItem("orchard_statuses", JSON.stringify(statuses));
+    localStorage.setItem("orchard_settings", JSON.stringify(settings));
+    localStorage.setItem("orchard_stickers_v1", JSON.stringify(stickers));
 }
-function pickDifferentIndex(length, storageKey){
-    const prev = Number(localStorage.getItem(storageKey));
-    let idx = Math.floor(Math.random() * length);
-    if(length > 1){
-        while(idx === prev){
-            idx = Math.floor(Math.random() * length);
-        }
-    }
-    localStorage.setItem(storageKey, String(idx));
-    return idx;
+function getCurrentColors(){
+    if(settings.themeIndex !== -1 && themes[settings.themeIndex]) return themes[settings.themeIndex];
+    return settings.customColors;
 }
 
-/* ----------------------------- 启动加载页 ----------------------------- */
 function setupStartupScreen(){
-    const screen = document.getElementById("startup-screen");
-    const icon = document.getElementById("startup-icon");
+    const screen = $("startup-screen");
+    const icon = $("startup-icon");
     if(!screen || !icon) return;
-
-    const paletteIndex = pickDifferentIndex(loaderPalettes.length, "orchard_loader_palette");
-    const iconIndex = pickDifferentIndex(loaderIcons.length, "orchard_loader_icon");
-
-    const palette = loaderPalettes[paletteIndex];
+    const palette = loaderPalettes[pickDifferentIndex(loaderPalettes.length,"orchard_loader_palette")];
+    const iconSvg = loaderIcons[pickDifferentIndex(loaderIcons.length,"orchard_loader_icon")];
     screen.style.setProperty("--loader-bg1", palette.bg1);
     screen.style.setProperty("--loader-bg2", palette.bg2);
     screen.style.setProperty("--loader-text", palette.text);
     screen.style.setProperty("--loader-accent", palette.accent);
     screen.style.setProperty("--loader-halo", palette.halo);
     screen.style.setProperty("--loader-halo-2", palette.halo2);
-
-    icon.innerHTML = loaderIcons[iconIndex];
+    icon.innerHTML = iconSvg;
 }
 function hideStartupScreen(){
     if(startupHidden) return;
     startupHidden = true;
-    const screen = document.getElementById("startup-screen");
+    const screen = $("startup-screen");
     if(!screen) return;
     screen.classList.add("hide");
-    setTimeout(()=>{
-        screen.remove();
-    }, 700);
+    setTimeout(()=>screen.remove(), 950);
 }
 
-/* ----------------------------- 聊天渲染 ----------------------------- */
-function renderNoContact(){
-    hideMsgMenu();
-    quotedMessage = null;
-
-    const peerName = document.getElementById("peer-name");
-    const peerStatus = document.getElementById("peer-status");
-    const peerAvatar = document.getElementById("peer-avatar");
-    const selfName = document.getElementById("self-name");
-    const selfStatus = document.getElementById("self-status");
-    const selfAvatar = document.getElementById("self-avatar");
-    const input = document.getElementById("message-input");
-    const sendBtn = document.getElementById("send-message-btn");
-    const container = document.getElementById("messages-container");
-
-    if(peerName) peerName.textContent = "未选择";
-    if(peerStatus) peerStatus.textContent = "请先创建会话";
-    if(peerAvatar){
-        peerAvatar.innerHTML = "";
-        peerAvatar.textContent = "?";
-    }
-    if(selfName) selfName.textContent = "念培";
-    if(selfStatus) selfStatus.textContent = "";
-    if(selfAvatar){
-        selfAvatar.innerHTML = "";
-        selfAvatar.textContent = "我";
-    }
-    if(input){
-        input.value = "";
-        input.disabled = true;
-    }
-    refreshInputPlaceholder();
-    if(sendBtn) sendBtn.disabled = true;
-    if(container) container.innerHTML = '<div class="empty-chat-placeholder">请先点击通讯录创建或选择一个会话</div>';
-}
-function refreshChat(){
-    hideMsgMenu();
-
-    const contact = contacts.find(c=>c.id === selectedContactId);
-    const input = document.getElementById("message-input");
-    const sendBtn = document.getElementById("send-message-btn");
-    const container = document.getElementById("messages-container");
-    if(!container) return;
-
-    const colors = getCurrentColors();
-    document.documentElement.style.setProperty("--bubble-font-size", settings.bubbleFontSize + "rem");
-    document.documentElement.style.setProperty("--name-font-size", settings.nameFontSize + "rem");
-    document.documentElement.style.setProperty("--header-color", colors.headerColor || defaultSettings.customColors.headerColor);
-
-    if(!contact){
-        renderNoContact();
-        return;
-    }
-
-    if(input) input.disabled = false;
-    if(sendBtn) sendBtn.disabled = false;
-    refreshInputPlaceholder();
-
-    document.getElementById("peer-name").textContent = contact.peerName || "对方";
-    document.getElementById("peer-status").textContent = contact.peerStatus || "";
-    document.getElementById("self-name").textContent = contact.selfName || "我";
-    document.getElementById("self-status").textContent = contact.selfStatus || "";
-
-    const peerAv = document.getElementById("peer-avatar");
-    const selfAv = document.getElementById("self-avatar");
-
-    if(contact.peerAvatar){
-        peerAv.innerHTML = `<img src="${contact.peerAvatar}" alt="peer">`;
-    }else{
-        peerAv.innerHTML = "";
-        peerAv.textContent = getInitials(contact.peerName);
-    }
-    if(contact.selfAvatar){
-        selfAv.innerHTML = `<img src="${contact.selfAvatar}" alt="self">`;
-    }else{
-        selfAv.innerHTML = "";
-        selfAv.textContent = getInitials(contact.selfName);
-    }
-
-    const msgs = Array.isArray(contact.messages) ? contact.messages : [];
-    let html = "";
-
-    msgs.forEach((msg, idx)=>{
-        const senderClass = msg.sender === "me" ? "me" : "contact";
-        const quoteHtml = (msg.quote && settings.quoteEnabled)
-            ? `<div class="quote-indicator"><i class="fa-solid fa-reply"></i> ${escapeHtml(msg.quote.text)}</div>`
-            : "";
-
-        let receiptHtml = "";
-        if(msg.sender === "me" && msg.receipt){
-            receiptHtml = settings.receiptStyle === "text"
-                ? `<span class="receipt">已读</span>`
-                : `<span class="receipt ${msg.receipt === "read" ? "read" : ""}"><i class="fa-solid fa-check-double"></i></span>`;
-        }
-
-        const bgColor = msg.sender === "me" ? colors.myBubble : colors.otherBubble;
-        const textColor = msg.sender === "me" ? colors.myText : colors.otherText;
-        const bubbleStyle = `background:${hexToRgba(bgColor, settings.customColors.bubbleOpacity)};color:${textColor};`;
-        const metaText = `${msg.time || ""}${msg.edited ? " · 已编辑" : ""}`;
-
-        html += `
-            <div class="message-row ${senderClass}" data-msg-idx="${idx}">
-                <div class="message-bubble" style="${bubbleStyle}">
-                    ${quoteHtml}
-                    <div class="message-text">${escapeHtml(msg.text || "")}</div>
-                    <div class="message-time">
-                        <span>${escapeHtml(metaText)}</span>
-                        ${receiptHtml}
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-
-    html += `
-        <div class="typing-indicator ${pendingReplies > 0 ? "show" : ""}" id="typing-indicator">
-            <div class="typing-bubble"><span></span><span></span><span></span></div>
-        </div>
-    `;
-
-    container.innerHTML = html;
-    container.scrollTop = container.scrollHeight;
-
-    container.querySelectorAll(".message-bubble").forEach(bubble=>{
-        bubble.addEventListener("click", e=>{
-            e.stopPropagation();
-            const row = bubble.closest(".message-row");
-            if(!row) return;
-            const idx = Number(row.dataset.msgIdx);
-            const msg = contact.messages[idx];
-            if(!msg) return;
-
-            const rect = bubble.getBoundingClientRect();
-            const x = e.clientX || (rect.left + rect.width / 2);
-            const y = e.clientY || rect.bottom;
-            showMsgMenu(x, y, idx, msg);
-        });
-    });
-}
-function showMsgMenu(x, y, idx, msg){
-    hideMsgMenu();
-
-    const menu = document.getElementById("message-actions-menu");
-    if(!menu) return;
-
-    menu.innerHTML = `
-        <button id="action-quote"><i class="fa-solid fa-reply"></i><span>引用消息</span></button>
-        <button id="action-edit"><i class="fa-regular fa-pen-to-square"></i><span>编辑消息</span></button>
-        <button id="action-delete" class="danger"><i class="fa-regular fa-trash-can"></i><span>删除消息</span></button>
-    `;
-    menu.style.display = "flex";
-    menu.style.visibility = "hidden";
-
-    requestAnimationFrame(()=>{
-        const rect = menu.getBoundingClientRect();
-        const margin = 10;
-        const left = Math.max(margin, Math.min(x, window.innerWidth - rect.width - margin));
-        const top = Math.max(margin, Math.min(y, window.innerHeight - rect.height - margin));
-        menu.style.left = left + "px";
-        menu.style.top = top + "px";
-        menu.style.visibility = "visible";
-    });
-
-    document.getElementById("action-quote").onclick = ()=>{
-        if(settings.quoteEnabled){
-            quotedMessage = { text: msg.text || "", sender: msg.sender || "contact" };
-            refreshInputPlaceholder();
-            const input = document.getElementById("message-input");
-            if(input) input.focus();
-        }else{
-            alert("你已关闭引用回复功能");
-        }
-        hideMsgMenu();
-    };
-
-    document.getElementById("action-edit").onclick = ()=>{
-        const contact = contacts.find(c=>c.id === selectedContactId);
-        if(!contact) return;
-        const current = contact.messages[idx];
-        if(!current) return;
-        const newText = prompt("编辑消息", current.text || "");
-        if(newText === null){
-            hideMsgMenu();
-            return;
-        }
-        const trimmed = newText.trim();
-        if(!trimmed){
-            alert("消息内容不能为空");
-            return;
-        }
-        current.text = trimmed;
-        current.edited = true;
-        touchContact(contact);
-        saveAll();
-        refreshChat();
-        hideMsgMenu();
-    };
-
-    document.getElementById("action-delete").onclick = ()=>{
-        const contact = contacts.find(c=>c.id === selectedContactId);
-        if(!contact) return;
-        if(confirm("删除消息？")){
-            contact.messages.splice(idx, 1);
-            touchContact(contact);
-            saveAll();
-            refreshChat();
-        }
-        hideMsgMenu();
-    };
-
-    activeMenuCloseHandler = (ev)=>{
-        if(!menu.contains(ev.target)){
-            hideMsgMenu();
-        }
-    };
-    setTimeout(()=>{
-        if(activeMenuCloseHandler){
-            window.addEventListener("click", activeMenuCloseHandler, true);
-        }
-    }, 10);
-}
-function sendMessage(){
-    const contactId = selectedContactId;
-    const contact = contacts.find(c=>c.id === contactId);
-    const input = document.getElementById("message-input");
-    if(!contact || !input) return;
-
-    const text = input.value.trim();
-    if(!text) return;
-
-    const newMsg = {
-        sender:"me",
-        text,
-        time:getCurrentTime(),
-        quote: quotedMessage ? { text: quotedMessage.text, sender: quotedMessage.sender } : null,
-        receipt:null,
-        edited:false
-    };
-
-    contact.messages.push(newMsg);
-    touchContact(contact);
-    pendingReplies++;
-
-    quotedMessage = null;
-    input.value = "";
-    refreshInputPlaceholder();
-
-    saveAll();
-    refreshChat();
-
-    const min = Math.min(settings.minWait, settings.maxWait);
-    const max = Math.max(settings.minWait, settings.maxWait);
-    const wait = Math.random() * ((max * 1000) - (min * 1000)) + (min * 1000);
-
-    setTimeout(()=>{
-        const liveContact = contacts.find(c=>c.id === contactId);
-        pendingReplies = Math.max(0, pendingReplies - 1);
-
-        if(!liveContact){
-            refreshChat();
-            return;
-        }
-
-        newMsg.receipt = "read";
-        const replyText = wordCards.length
-            ? wordCards[Math.floor(Math.random() * wordCards.length)].text
-            : "...";
-
-        liveContact.messages.push({
-            sender:"contact",
-            text:replyText,
-            time:getCurrentTime(),
-            quote:null,
-            receipt:null,
-            edited:false
-        });
-        touchContact(liveContact);
-
-        saveAll();
-        refreshChat();
-    }, wait);
-}
-
-/* ----------------------------- 字卡库 ----------------------------- */
-function renderWordCards(){
-    const listDiv = document.getElementById("wordcard-list");
-    if(!listDiv) return;
-
-    const keyword = wordcardSearchKeyword.trim().toLowerCase();
-    let filtered = currentGroupFilter === "all"
-        ? [...wordCards]
-        : wordCards.filter(c=>c.groupId === currentGroupFilter);
-
-    if(keyword){
-        filtered = filtered.filter(card=>{
-            const groupName = groups.find(g=>g.id === card.groupId)?.name || "默认";
-            return String(card.text).toLowerCase().includes(keyword) || String(groupName).toLowerCase().includes(keyword);
-        });
-    }
-
-    if(!filtered.length){
-        listDiv.innerHTML = `<div style="color:#8a8a8a;text-align:center;">${keyword ? "没有匹配字卡" : "暂无字卡"}</div>`;
-        return;
-    }
-
-    let html = "";
-    filtered.forEach(card=>{
-        const groupName = groups.find(g=>g.id === card.groupId)?.name || "默认";
-        html += `
-            <div class="wordcard-item" data-id="${card.id}">
-                <span class="wordcard-text">
-                    ${escapeHtml(card.text)}
-                    <span class="wordcard-group-badge">${escapeHtml(groupName)}</span>
-                </span>
-                <div>
-                    <button class="move-wordcard" title="移动分组"><i class="fa-solid fa-folder-open"></i></button>
-                    <button class="edit-wordcard" title="编辑"><i class="fa-regular fa-pen-to-square"></i></button>
-                    <button class="delete-wordcard" title="删除"><i class="fa-regular fa-trash-can"></i></button>
-                </div>
-            </div>
-        `;
-    });
-
-    listDiv.innerHTML = html;
-
-    listDiv.querySelectorAll(".wordcard-text").forEach(el=>{
-        el.addEventListener("click", ()=>{
-            const id = el.closest(".wordcard-item")?.dataset.id;
-            const card = wordCards.find(c=>c.id === id);
-            const input = document.getElementById("message-input");
-            if(card && input){
-                input.value = card.text;
-                closeOverlay("wordcard-overlay");
-                input.focus();
-            }
-        });
-    });
-
-    listDiv.querySelectorAll(".edit-wordcard").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-            const id = btn.closest(".wordcard-item")?.dataset.id;
-            const card = wordCards.find(c=>c.id === id);
-            if(!card) return;
-            const newText = prompt("修改字卡", card.text);
-            if(newText === null) return;
-            const trimmed = newText.trim();
-            if(!trimmed) return;
-            card.text = trimmed;
-            saveAll();
-            renderWordCards();
-        });
-    });
-
-    listDiv.querySelectorAll(".delete-wordcard").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-            const id = btn.closest(".wordcard-item")?.dataset.id;
-            if(confirm("删除字卡？")){
-                wordCards = wordCards.filter(c=>c.id !== id);
-                saveAll();
-                renderWordCards();
-            }
-        });
-    });
-
-    listDiv.querySelectorAll(".move-wordcard").forEach(btn=>{
-        btn.addEventListener("click", e=>{
-            e.stopPropagation();
-            const id = btn.closest(".wordcard-item")?.dataset.id;
-            const card = wordCards.find(c=>c.id === id);
-            if(!card) return;
-
-            const menu = document.createElement("div");
-            menu.className = "group-selector-menu";
-
-            const rect = btn.getBoundingClientRect();
-            menu.style.left = rect.left + "px";
-            menu.style.top = (rect.bottom + 5) + "px";
-
-            const targetGroups = groups.filter(g=>g.id !== card.groupId);
-            if(!targetGroups.length){
-                const empty = document.createElement("button");
-                empty.textContent = "没有其它分组";
-                empty.disabled = true;
-                menu.appendChild(empty);
-            }else{
-                targetGroups.forEach(g=>{
-                    const opt = document.createElement("button");
-                    opt.textContent = g.name;
-                    opt.onclick = ()=>{
-                        card.groupId = g.id;
-                        saveAll();
-                        renderWordCards();
-                        menu.remove();
-                    };
-                    menu.appendChild(opt);
-                });
-            }
-
-            document.body.appendChild(menu);
-
-            const removeMenu = (ev)=>{
-                if(!menu.contains(ev.target)){
-                    menu.remove();
-                    document.removeEventListener("click", removeMenu);
-                }
-            };
-            setTimeout(()=>document.addEventListener("click", removeMenu), 10);
-        });
-    });
-}
-function renderGroupTabs(){
-    const container = document.getElementById("group-tabs-container");
-    if(!container) return;
-
-    let html = `
-        <div class="group-tab ${currentGroupFilter === "all" ? "active" : ""}" data-group="all">
-            <i class="fa-solid fa-layer-group"></i> 全部
-        </div>
-    `;
-    groups.forEach(g=>{
-        html += `
-            <div class="group-tab ${currentGroupFilter === g.id ? "active" : ""}" data-group="${g.id}">
-                ${escapeHtml(g.name)}
-                <span class="group-actions">
-                    <i class="fa-solid fa-pen" data-action="edit" data-id="${g.id}" title="编辑"></i>
-                    ${g.id !== "default" ? `<i class="fa-solid fa-trash-can" data-action="delete" data-id="${g.id}" title="删除"></i>` : ""}
-                </span>
-            </div>
-        `;
-    });
-    html += `<div class="add-group-btn" id="add-group-btn"><i class="fa-solid fa-plus"></i> 分组</div>`;
-    container.innerHTML = html;
-
-    container.querySelectorAll(".group-tab").forEach(tab=>{
-        tab.addEventListener("click", e=>{
-            if(e.target.tagName === "I") return;
-            currentGroupFilter = tab.dataset.group;
-            renderGroupTabs();
-            renderWordCards();
-        });
-    });
-
-    container.querySelectorAll('[data-action="edit"]').forEach(btn=>{
-        btn.addEventListener("click", e=>{
-            e.stopPropagation();
-            const id = btn.dataset.id;
-            const group = groups.find(g=>g.id === id);
-            if(!group) return;
-            const newName = prompt("修改分组名", group.name);
-            if(newName === null) return;
-            const trimmed = newName.trim();
-            if(!trimmed) return;
-            group.name = trimmed;
-            saveAll();
-            renderGroupTabs();
-            renderWordCards();
-            updateGroupSelect();
-        });
-    });
-
-    container.querySelectorAll('[data-action="delete"]').forEach(btn=>{
-        btn.addEventListener("click", e=>{
-            e.stopPropagation();
-            const id = btn.dataset.id;
-            if(id === "default"){
-                alert("默认分组不可删除");
-                return;
-            }
-            if(confirm("删除分组后，分组内字卡会移到默认分组。继续吗？")){
-                groups = groups.filter(g=>g.id !== id);
-                wordCards.forEach(c=>{
-                    if(c.groupId === id) c.groupId = "default";
-                });
-                if(currentGroupFilter === id) currentGroupFilter = "all";
-                saveAll();
-                renderGroupTabs();
-                renderWordCards();
-                updateGroupSelect();
-            }
-        });
-    });
-
-    document.getElementById("add-group-btn")?.addEventListener("click", ()=>{
-        const name = prompt("新分组名称");
-        if(name === null) return;
-        const trimmed = name.trim();
-        if(!trimmed) return;
-        groups.push({ id: uid("g"), name: trimmed });
-        saveAll();
-        renderGroupTabs();
-        renderWordCards();
-        updateGroupSelect();
-    });
-}
-function updateGroupSelect(){
-    const select = document.getElementById("new-wordcard-group");
-    if(!select) return;
-    select.innerHTML = "";
-    groups.forEach(g=>{
-        const opt = document.createElement("option");
-        opt.value = g.id;
-        opt.textContent = g.name;
-        select.appendChild(opt);
-    });
-}
-function addWordCard(){
-    const input = document.getElementById("new-wordcard-input");
-    const groupSelect = document.getElementById("new-wordcard-group");
-    if(!input || !groupSelect) return;
-
-    const text = input.value.trim();
-    if(!text) return;
-
-    const groupId = groups.some(g=>g.id === groupSelect.value) ? groupSelect.value : "default";
-    wordCards.push({
-        id: uid("wc"),
-        text,
-        groupId
-    });
-    input.value = "";
-    saveAll();
-    renderWordCards();
-}
-function exportWordCards(){
-    const payload = {
-        version:2,
-        exportAt:new Date().toISOString(),
-        groups,
-        wordCards
-    };
-    const stamp = new Date().toISOString().replace(/[:.]/g,"-");
-    downloadJson(`wordcards-${stamp}.json`, payload);
-}
-function importWordCardsFromParsed(data){
-    const groupCountBefore = groups.length;
-    let importedCards = 0;
-    const groupIdMap = {};
-
-    const registerGroup = (raw)=>{
-        if(!raw) return null;
-
-        let oldId = null;
-        let name = "";
-
-        if(typeof raw === "string"){
-            name = raw.trim();
-        }else if(typeof raw === "object"){
-            oldId = raw.id ? String(raw.id) : null;
-            name = String(raw.name || "").trim();
-        }
-        if(!name) return null;
-
-        const existingByName = groups.find(g=>g.name === name);
-        if(existingByName){
-            if(oldId) groupIdMap[oldId] = existingByName.id;
-            return existingByName.id;
-        }
-
-        const id = uniqueGroupId(oldId);
-        groups.push({ id, name });
-        if(oldId) groupIdMap[oldId] = id;
-        return id;
-    };
-
-    if(data && typeof data === "object" && !Array.isArray(data) && Array.isArray(data.groups)){
-        data.groups.forEach(registerGroup);
-    }
-
-    let cards = [];
-    if(Array.isArray(data)){
-        cards = data;
-    }else if(data && typeof data === "object"){
-        cards = data.wordCards || data.cards || data.items || [];
-    }else{
-        throw new Error("JSON 格式不正确");
-    }
-
-    if(!Array.isArray(cards)) throw new Error("字卡数据必须是数组");
-
-    cards.forEach(item=>{
-        let text = "";
-        let groupId = "default";
-        let preferredId = null;
-
-        if(typeof item === "string"){
-            text = item.trim();
-        }else if(item && typeof item === "object"){
-            preferredId = item.id ? String(item.id) : null;
-            text = String(item.text ?? item.content ?? "").trim();
-
-            if(item.groupId){
-                const rawGroupId = String(item.groupId);
-                if(groups.some(g=>g.id === rawGroupId)){
-                    groupId = rawGroupId;
-                }else if(groupIdMap[rawGroupId]){
-                    groupId = groupIdMap[rawGroupId];
-                }
-            }
-            if(groupId === "default" && item.groupName){
-                groupId = ensureGroupByName(item.groupName);
-            }
-        }
-
-        if(text){
-            wordCards.push({
-                id: uniqueWordCardId(preferredId),
-                text,
-                groupId
-            });
-            importedCards++;
-        }
-    });
-
-    return {
-        importedCards,
-        importedGroups: groups.length - groupCountBefore
-    };
-}
-function importWordCards(){
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json,application/json";
-
-    input.onchange = e=>{
-        const file = e.target.files[0];
-        if(!file) return;
-
-        const reader = new FileReader();
-        reader.onload = ev=>{
-            try{
-                const data = JSON.parse(ev.target.result);
-                const result = importWordCardsFromParsed(data);
-                saveAll();
-                updateGroupSelect();
-                renderGroupTabs();
-                renderWordCards();
-                alert(`导入成功：${result.importedCards} 张字卡，${result.importedGroups} 个新分组`);
-            }catch(err){
-                alert('导入失败：请使用 JSON 数组，或 { groups:[], wordCards:[] } 格式。');
-            }
-        };
-        reader.readAsText(file, "utf-8");
-    };
-
-    input.click();
-}
-
-/* ----------------------------- 会话管理 ----------------------------- */
-function renderContactList(){
-    const list = document.getElementById("contact-list");
-    if(!list) return;
-
-    const sortedContacts = getSortedContacts();
-
-    if(!sortedContacts.length){
-        list.innerHTML = '<div style="color:#8a8a8a;text-align:center;">暂无会话</div>';
-        return;
-    }
-
-    let html = "";
-    sortedContacts.forEach(c=>{
-        html += `
-            <div class="contact-item ${c.id === selectedContactId ? "active" : ""}" data-id="${c.id}">
-                <div class="contact-main">
-                    <strong>${escapeHtml(c.peerName)}</strong>
-                    <div class="contact-sub">
-                        ${c.pinned ? "📌 已置顶 · " : ""}最近活跃：${escapeHtml(formatShortDateTime(c.lastActive || c.createdAt))}
-                    </div>
-                </div>
-                <div class="contact-actions">
-                    <button class="pin-contact ${c.pinned ? "active" : ""}" title="${c.pinned ? "取消置顶" : "置顶"}">
-                        <i class="fa-solid fa-thumbtack"></i>
-                    </button>
-                    <button class="delete-contact" title="删除会话">
-                        <i class="fa-regular fa-trash-can"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-    });
-    list.innerHTML = html;
-
-    list.querySelectorAll(".contact-item").forEach(item=>{
-        const id = item.dataset.id;
-
-        item.addEventListener("click", e=>{
-            if(e.target.closest(".pin-contact") || e.target.closest(".delete-contact")) return;
-            if(id !== selectedContactId){
-                selectedContactId = id;
-                saveAll();
-                refreshChat();
-                closeOverlay("contact-overlay");
-            }
-        });
-
-        item.querySelector(".pin-contact")?.addEventListener("click", e=>{
-            e.stopPropagation();
-            const contact = contacts.find(c=>c.id === id);
-            if(!contact) return;
-            contact.pinned = !contact.pinned;
-            saveAll();
-            renderContactList();
-        });
-
-        item.querySelector(".delete-contact")?.addEventListener("click", e=>{
-            e.stopPropagation();
-            if(confirm("删除会话？")){
-                contacts = contacts.filter(c=>c.id !== id);
-                const sorted = getSortedContacts();
-                if(selectedContactId === id){
-                    selectedContactId = sorted[0]?.id || null;
-                }
-                saveAll();
-                renderContactList();
-                refreshChat();
-            }
-        });
-    });
-}
-function createNewContact(){
-    const name = prompt("输入对方昵称", "新朋友");
-    if(name === null) return;
-    const trimmed = name.trim();
-    if(!trimmed) return;
-
-    const newId = uid("c");
-    const now = new Date().toISOString();
-    contacts.push({
-        id:newId,
-        peerName:trimmed,
-        peerAvatar:null,
-        peerStatus:"在线",
-        selfName:"念培",
-        selfAvatar:null,
-        selfStatus:"想喝椰汁",
-        createdAt:now,
-        lastActive:now,
-        pinned:false,
-        messages:[]
-    });
-    selectedContactId = newId;
-    saveAll();
-    renderContactList();
-    refreshChat();
-    closeOverlay("contact-overlay");
-}
-
-/* ----------------------------- 状态库 ----------------------------- */
-function renderStatusList(target){
-    const list = document.getElementById("status-list");
-    if(!list) return;
-
-    if(!statuses.length){
-        list.innerHTML = '<div style="color:#8a8a8a;text-align:center;">暂无状态</div>';
-        return;
-    }
-
-    let html = "";
-    statuses.forEach((st, idx)=>{
-        html += `
-            <div class="status-item" data-idx="${idx}">
-                <span style="flex:1;cursor:pointer;">${escapeHtml(st)}</span>
-                <div>
-                    <button class="edit-status" title="编辑"><i class="fa-regular fa-pen-to-square"></i></button>
-                    <button class="delete-status" title="删除"><i class="fa-regular fa-trash-can"></i></button>
-                </div>
-            </div>
-        `;
-    });
-    list.innerHTML = html;
-
-    list.querySelectorAll(".status-item").forEach(item=>{
-        const idx = Number(item.dataset.idx);
-
-        item.querySelector("span")?.addEventListener("click", ()=>{
-            const contact = contacts.find(c=>c.id === selectedContactId);
-            if(!contact) return;
-            if(target === "peer") contact.peerStatus = statuses[idx];
-            else contact.selfStatus = statuses[idx];
-            saveAll();
-            refreshChat();
-            closeOverlay("status-overlay");
-        });
-
-        item.querySelector(".edit-status")?.addEventListener("click", ()=>{
-            const newVal = prompt("修改状态", statuses[idx]);
-            if(newVal === null) return;
-            const trimmed = newVal.trim();
-            if(!trimmed) return;
-            statuses[idx] = trimmed;
-            saveAll();
-            renderStatusList(target);
-        });
-
-        item.querySelector(".delete-status")?.addEventListener("click", ()=>{
-            if(confirm("删除状态？")){
-                statuses.splice(idx,1);
-                saveAll();
-                renderStatusList(target);
-            }
-        });
-    });
-}
-
-/* ----------------------------- 塔罗 ----------------------------- */
-function openTarotImagePicker(name, imgEl){
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = ev=>{
-        const file = ev.target.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = event=>{
-            imgEl.src = event.target.result;
-            localStorage.setItem(`tarot_img_${name}`, event.target.result);
-        };
-        reader.readAsDataURL(file);
-    };
-    input.click();
-}
-function drawTarot(count){
-    const qEl = document.getElementById("tarot-question");
-    const container = document.getElementById("tarot-result-area");
-    if(!qEl || !container) return;
-
-    const q = qEl.value.trim();
-    if(!q){
-        alert("请先输入问题");
-        return;
-    }
-
-    const shuffled = [...FULL_TAROT];
-    for(let i = shuffled.length - 1; i > 0; i--){
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    const drawn = shuffled.slice(0, count);
-
-    container.innerHTML = "";
-
-    drawn.forEach(name=>{
-        const orientation = randomOrientation();
-        const imgSrc = getTarotImage(name);
-
-        const div = document.createElement("div");
-        div.className = "tarot-card";
-        div.innerHTML = `
-            <div class="tarot-flip-wrap" title="点击翻牌">
-                <div class="tarot-flip-inner">
-                    <div class="tarot-face tarot-back">
-                        <div class="tarot-back-inner">
-                            <i class="fa-solid fa-star-and-crescent"></i>
-                            <div style="font-size:.7rem;">点击翻牌</div>
-                        </div>
-                    </div>
-                    <div class="tarot-face tarot-front">
-                        <img src="${imgSrc}" alt="${escapeHtml(name)}">
-                    </div>
-                </div>
-            </div>
-            <div class="tarot-hint">点击翻牌</div>
-            <div class="tarot-meta">
-                <div class="tarot-name">${escapeHtml(name)}</div>
-                <div class="reversed">${orientation === "逆位" ? "⚡ 逆位" : "✨ 正位"}</div>
-                <button class="tarot-change-image">换图</button>
-            </div>
-        `;
-
-        const flipWrap = div.querySelector(".tarot-flip-wrap");
-        const img = div.querySelector("img");
-        const changeBtn = div.querySelector(".tarot-change-image");
-
-        flipWrap.addEventListener("click", ()=>{
-            div.classList.add("revealed");
-        });
-
-        changeBtn.addEventListener("click", e=>{
-            e.stopPropagation();
-            openTarotImagePicker(name, img);
-        });
-
-        container.appendChild(div);
-    });
-}
-
-/* ----------------------------- 初始化数据 ----------------------------- */
-function initData(){
-    contacts = readJSON("orchard_contacts", []);
-    if(!Array.isArray(contacts)) contacts = [];
-
-    const legacySeedTexts = ["今天果园的椰子熟了"];
-    contacts.forEach(contact=>{
-        if(!Array.isArray(contact.messages)) contact.messages = [];
-        const joined = contact.messages.map(m=>String(m.text || "")).join("||");
-        if(legacySeedTexts.some(t=>joined.includes(t))){
-            contact.messages = [];
-        }
-    });
-
-    if(!contacts.length){
-        const now = new Date().toISOString();
-        contacts = [{
-            id:"c1",
-            peerName:"陆沉",
-            peerAvatar:null,
-            peerStatus:"在线",
-            selfName:"念培",
-            selfAvatar:null,
-            selfStatus:"想喝椰汁",
-            createdAt:now,
-            lastActive:now,
-            pinned:false,
-            messages:[]
-        }];
-        selectedContactId = "c1";
-    }else{
-        contacts.forEach(contact=>{
-            if(!Array.isArray(contact.messages)) contact.messages = [];
-            if(typeof contact.pinned !== "boolean") contact.pinned = false;
-            if(!contact.createdAt) contact.createdAt = new Date().toISOString();
-            if(!contact.lastActive) contact.lastActive = contact.createdAt;
-        });
-
-        selectedContactId = localStorage.getItem("orchard_selected");
-        if(!selectedContactId || !contacts.find(c=>c.id === selectedContactId)){
-            selectedContactId = getSortedContacts()[0]?.id || contacts[0]?.id || null;
-        }
-    }
-
-    groups = readJSON("orchard_groups", []);
-    if(!Array.isArray(groups)) groups = [];
-    if(!groups.some(g=>g.id === "default")) groups.unshift({ id:"default", name:"默认" });
-
-    wordCards = readJSON("orchard_wordcards_v2", []);
-    if(!Array.isArray(wordCards)) wordCards = [];
-    wordCards = wordCards.map((item, i)=>{
-        if(typeof item === "string"){
-            return { id: uid("wc") + "_" + i, text:item, groupId:"default" };
-        }
-        return {
-            id: item.id || uid("wc") + "_" + i,
-            text: item.text || "",
-            groupId: item.groupId || "default"
-        };
-    }).filter(item=>item.text);
-
-    if(!wordCards.length){
-        wordCards = [
-            { id:"wc1", text:"不来找我", groupId:"default" },
-            { id:"wc2", text:"没好好照顾自己", groupId:"default" },
-            { id:"wc3", text:"别喝冰的", groupId:"default" }
-        ];
-    }
-    wordCards.forEach(c=>{
-        if(!c.groupId || !groups.find(g=>g.id === c.groupId)) c.groupId = "default";
-    });
-
-    statuses = readJSON("orchard_statuses", []);
-    if(!Array.isArray(statuses) || !statuses.length){
-        statuses = ["在线","忙碌","想喝椰汁","发呆","开心"];
-    }
-
-    const storedSettings = readJSON("orchard_settings", null);
-    if(storedSettings){
-        settings = {
-            ...defaultSettings,
-            ...storedSettings,
-            customColors:{
-                ...defaultSettings.customColors,
-                ...(storedSettings.customColors || {})
-            }
-        };
-    }
-}
-
-/* ----------------------------- 外观 ----------------------------- */
-function applyBgAndFont(){
-    const container = document.getElementById("messages-container");
-    if(container){
-        container.style.setProperty("--chat-bg-image", settings.bgImage ? `url("${settings.bgImage}")` : "none");
-        container.style.setProperty("--chat-bg-opacity", settings.bgOpacity);
-        container.style.setProperty("--chat-bg-blur", settings.bgBlur + "px");
-    }
-    document.documentElement.style.setProperty("--name-font-size", settings.nameFontSize + "rem");
-    document.documentElement.style.setProperty("--bubble-font-size", settings.bubbleFontSize + "rem");
-    refreshChat();
-}
-function renderThemeGrid(){
-    const grid = document.getElementById("theme-grid");
-    if(!grid) return;
-    grid.innerHTML = "";
-
-    themes.forEach((t, i)=>{
-        const div = document.createElement("div");
-        div.className = "theme-item";
-        div.style.background = `linear-gradient(135deg, ${t.myBubble}, ${t.otherBubble})`;
-        div.textContent = t.name;
-        div.addEventListener("click", ()=>{
-            settings.themeIndex = i;
-            settings.customColors = {
-                ...settings.customColors,
-                myBubble:t.myBubble,
-                otherBubble:t.otherBubble,
-                myText:t.myText,
-                otherText:t.otherText,
-                headerColor:t.headerColor
-            };
-            saveAll();
-            syncColorInputs();
-            applyBgAndFont();
-            closeOverlay("theme-overlay");
-            openOverlay("appearance-overlay");
-        });
-        grid.appendChild(div);
-    });
-}
-
-/* ----------------------------- 构建 UI ----------------------------- */
 function buildUI(){
-    document.getElementById("app").innerHTML = `
+    $("app").innerHTML = `
         <div class="chat">
             <div class="chat-header">
                 <div class="peer-info">
@@ -2288,13 +1588,11 @@ function buildUI(){
                         <span class="status" id="peer-status">在线</span>
                     </div>
                 </div>
-
                 <div class="center-icons">
                     <button class="icon-btn" id="contact-icon" title="会话管理"><i class="fa-regular fa-address-book"></i></button>
                     <button class="icon-btn" id="wordcard-icon" title="字卡库"><i class="fa-regular fa-rectangle-list"></i></button>
                     <button class="icon-btn" id="settings-icon" title="设置"><i class="fa-solid fa-sliders"></i></button>
                 </div>
-
                 <div class="self-info">
                     <div class="info-text">
                         <span class="name" id="self-name">念培</span>
@@ -2311,12 +1609,24 @@ function buildUI(){
             </div>
 
             <div class="chat-footer">
-                <input type="text" id="message-input" placeholder="写一句悄悄话...">
-                <button id="send-message-btn" title="发送"><i class="fa-solid fa-paper-plane"></i></button>
+                <div class="quote-preview" id="quote-preview">
+                    <div class="quote-preview-main">
+                        <i class="fa-solid fa-reply"></i>
+                        <div style="min-width:0;">
+                            <div class="quote-preview-title">引用消息</div>
+                            <div class="quote-preview-text" id="quote-preview-text"></div>
+                        </div>
+                    </div>
+                    <button class="quote-preview-close" id="quote-preview-close"><i class="fa-regular fa-circle-xmark"></i></button>
+                </div>
+                <div class="footer-main">
+                    <input type="text" id="message-input" placeholder="写一句悄悄话...">
+                    <button class="footer-btn" id="sticker-trigger-btn" title="发送表情包"><i class="fa-regular fa-images"></i></button>
+                    <button class="footer-btn" id="send-message-btn" title="发送"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
             </div>
         </div>
 
-        <!-- 字卡库 -->
         <div class="overlay" id="wordcard-overlay">
             <div class="panel">
                 <div class="panel-header">
@@ -2324,11 +1634,18 @@ function buildUI(){
                     <button id="wordcard-close"><i class="fa-regular fa-circle-xmark"></i></button>
                 </div>
                 <div class="group-tabs" id="group-tabs-container"></div>
-                <input type="text" id="wordcard-search" placeholder="搜索字卡或分组...">
-                <div style="display:flex;gap:6px;margin-bottom:16px;">
-                    <input type="text" id="new-wordcard-input" placeholder="新字卡">
-                    <select id="new-wordcard-group"></select>
-                    <button id="add-wordcard">新增</button>
+                <input class="soft-input" type="text" id="wordcard-search" placeholder="搜索字卡或分组...">
+                <div class="wordcard-batchbar">
+                    <button class="soft-btn" id="toggle-wordcard-select">多选</button>
+                    <button class="soft-btn" id="select-all-wordcards">全选当前</button>
+                    <button class="soft-btn" id="batch-move-wordcards">所选分组</button>
+                    <button class="soft-btn" id="batch-delete-wordcards">删除所选</button>
+                    <span class="wordcard-batch-count" id="wordcard-selected-count"></span>
+                </div>
+                <div class="flex-row" style="margin-bottom:12px;">
+                    <input class="soft-input" type="text" id="new-wordcard-input" placeholder="新字卡">
+                    <select class="soft-select" id="new-wordcard-group"></select>
+                    <button class="soft-btn" id="add-wordcard">新增</button>
                 </div>
                 <div id="wordcard-list"></div>
                 <div class="panel-footer">
@@ -2339,7 +1656,27 @@ function buildUI(){
             </div>
         </div>
 
-        <!-- 会话管理 -->
+        <div class="overlay" id="sticker-overlay">
+            <div class="panel">
+                <div class="panel-header">
+                    <span>发送表情包</span>
+                    <button id="sticker-close"><i class="fa-regular fa-circle-xmark"></i></button>
+                </div>
+                <div class="sticker-toolbar">
+                    <label class="upload-chip">
+                        <i class="fa-regular fa-image"></i>
+                        添加 JPG / PNG
+                        <input type="file" id="sticker-upload" accept=".jpg,.jpeg,.png,.webp,image/*" multiple style="display:none;">
+                    </label>
+                    <span class="soft-tip">点按图片即可发送</span>
+                </div>
+                <div class="sticker-grid" id="sticker-grid"></div>
+                <div class="panel-footer">
+                    <button id="sticker-close2">关闭</button>
+                </div>
+            </div>
+        </div>
+
         <div class="overlay" id="contact-overlay">
             <div class="panel">
                 <div class="panel-header">
@@ -2348,22 +1685,23 @@ function buildUI(){
                 </div>
                 <div id="contact-list"></div>
                 <div class="panel-footer">
+                    <button id="import-chat">导入记录</button>
+                    <button id="export-chat">导出记录</button>
                     <button id="new-contact">新建会话</button>
                     <button id="contact-close2">关闭</button>
                 </div>
             </div>
         </div>
 
-        <!-- 状态库 -->
         <div class="overlay" id="status-overlay">
             <div class="panel">
                 <div class="panel-header">
                     <span>状态库</span>
                     <button id="status-close"><i class="fa-regular fa-circle-xmark"></i></button>
                 </div>
-                <div style="display:flex;gap:6px;">
-                    <input type="text" id="new-status" placeholder="新状态">
-                    <button id="add-status">新增</button>
+                <div class="flex-row">
+                    <input class="soft-input" type="text" id="new-status" placeholder="新状态">
+                    <button class="soft-btn" id="add-status">新增</button>
                 </div>
                 <div id="status-list" style="margin-top:12px;"></div>
                 <div class="panel-footer">
@@ -2373,7 +1711,6 @@ function buildUI(){
             </div>
         </div>
 
-        <!-- 设置主菜单 -->
         <div class="overlay" id="settings-main-overlay">
             <div class="panel">
                 <div class="panel-header">
@@ -2391,7 +1728,6 @@ function buildUI(){
             </div>
         </div>
 
-        <!-- 外观设置 -->
         <div class="overlay" id="appearance-overlay">
             <div class="panel">
                 <div class="panel-header">
@@ -2411,7 +1747,6 @@ function buildUI(){
             </div>
         </div>
 
-        <!-- 主题配色 -->
         <div class="overlay" id="theme-overlay">
             <div class="panel">
                 <div class="panel-header">
@@ -2426,7 +1761,6 @@ function buildUI(){
             </div>
         </div>
 
-        <!-- 气泡颜色 -->
         <div class="overlay" id="bubble-color-overlay">
             <div class="panel">
                 <div class="panel-header">
@@ -2452,7 +1786,6 @@ function buildUI(){
             </div>
         </div>
 
-        <!-- 字体调节 -->
         <div class="overlay" id="font-adjust-overlay">
             <div class="panel">
                 <div class="panel-header">
@@ -2476,19 +1809,16 @@ function buildUI(){
             </div>
         </div>
 
-        <!-- 背景 -->
         <div class="overlay" id="background-overlay">
             <div class="panel">
                 <div class="panel-header">
                     <span>背景</span>
                     <button id="background-close"><i class="fa-regular fa-circle-xmark"></i></button>
                 </div>
-                <div>
-                    <label for="bg-upload" style="display:block;background:#d2e6ec;border-radius:40px;padding:10px;text-align:center;cursor:pointer;">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> 上传图片
-                    </label>
+                <label class="upload-chip" style="margin-bottom:12px;display:inline-flex;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> 上传图片
                     <input type="file" id="bg-upload" accept="image/*" style="display:none;">
-                </div>
+                </label>
                 <div class="slider-row">
                     <label>透明度</label>
                     <input type="range" id="bg-opacity" min="0" max="1" step="0.1">
@@ -2499,7 +1829,7 @@ function buildUI(){
                     <input type="range" id="bg-blur" min="0" max="10" step="1">
                     <span id="bg-blur-val">0px</span>
                 </div>
-                <button id="reset-bg" style="width:100%;margin-top:10px;">恢复默认</button>
+                <button class="soft-btn" id="reset-bg" style="width:100%;margin-top:8px;">恢复默认</button>
                 <div class="panel-footer">
                     <button id="background-back">← 返回</button>
                     <button id="background-close2">关闭</button>
@@ -2507,7 +1837,6 @@ function buildUI(){
             </div>
         </div>
 
-        <!-- 聊天设置 -->
         <div class="overlay" id="chat-settings-main-overlay">
             <div class="panel">
                 <div class="panel-header">
@@ -2523,7 +1852,16 @@ function buildUI(){
                     </label>
                 </div>
 
-                <div>
+                <div class="switch-row">
+                    <span>发送表情包</span>
+                    <label class="switch">
+                        <input type="checkbox" id="robot-sticker-switch">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="soft-tip">开启后，字卡机器人会随机发送表情包</div>
+
+                <div style="margin-top:14px;">
                     <div>已读回执</div>
                     <div class="receipt-options">
                         <label class="receipt-option">
@@ -2538,7 +1876,7 @@ function buildUI(){
                     </div>
                 </div>
 
-                <div>
+                <div style="margin-top:14px;">
                     <div>回复节奏</div>
                     <div class="slider-row">
                         <label>最短等待</label>
@@ -2559,7 +1897,6 @@ function buildUI(){
             </div>
         </div>
 
-        <!-- 塔罗 -->
         <div class="overlay" id="tarot-overlay">
             <div class="panel">
                 <div class="panel-header">
@@ -2567,9 +1904,14 @@ function buildUI(){
                     <button id="tarot-close"><i class="fa-regular fa-circle-xmark"></i></button>
                 </div>
                 <input type="text" id="tarot-question" class="question-input" placeholder="请输入你想询问的问题...">
-                <div class="tarot-buttons">
-                    <button id="draw-one">✨ 抽一张牌</button>
-                    <button id="draw-three">🔮 抽三张牌</button>
+                <div class="tarot-controls">
+                    <select id="tarot-spread-mode" class="tarot-select">
+                        <option value="single">单张启示</option>
+                        <option value="line3">时间之流（三张）</option>
+                        <option value="triangle">三角牌阵（三张）</option>
+                        <option value="cross5">十字牌阵（五张）</option>
+                    </select>
+                    <button class="tarot-draw-btn" id="tarot-draw-btn">开始洗牌</button>
                 </div>
                 <div id="tarot-result-area" class="tarot-result"></div>
                 <div class="panel-footer">
@@ -2579,24 +1921,1280 @@ function buildUI(){
             </div>
         </div>
 
-        <div id="message-actions-menu" class="message-actions-menu" style="display:none;"></div>
+        <div id="message-actions-menu" class="message-actions-menu"></div>
     `;
 }
 
-/* ----------------------------- 绑定事件 ----------------------------- */
-function bindEvents(){
-    const $ = id => document.getElementById(id);
+function openOverlay(id){
+    const el = $(id);
+    if(el) el.classList.add("show");
+}
+function closeOverlay(id){
+    const el = $(id);
+    if(el) el.classList.remove("show");
+}
+function getCurrentContact(){
+    return contacts.find(c=>c.id === selectedContactId) || null;
+}
+function renderQuotePreview(){
+    const bar = $("quote-preview");
+    const text = $("quote-preview-text");
+    if(!bar || !text) return;
+    if(!quotedMessage || !settings.quoteEnabled){
+        bar.classList.remove("show");
+        text.textContent = "";
+        return;
+    }
+    bar.classList.add("show");
+    text.textContent = quotedMessage.type === "sticker"
+        ? `[表情包] ${quotedMessage.stickerName || "表情包"}`
+        : quotedMessage.text || "";
+}
+function clearQuote(){
+    quotedMessage = null;
+    renderQuotePreview();
+    refreshInputPlaceholder();
+}
+function refreshInputPlaceholder(){
+    const input = $("message-input");
+    if(!input) return;
+    if(!selectedContactId){
+        input.placeholder = "请先添加联系人";
+    }else if(quotedMessage && settings.quoteEnabled){
+        input.placeholder = "继续输入...";
+    }else{
+        input.placeholder = "写一句悄悄话...";
+    }
+}
 
-    $("send-message-btn").addEventListener("click", sendMessage);
+function renderNoContact(){
+    hideMsgMenu();
+    quotedMessage = null;
+    renderQuotePreview();
+
+    const peerName = $("peer-name");
+    const peerStatus = $("peer-status");
+    const peerAvatar = $("peer-avatar");
+    const selfName = $("self-name");
+    const selfStatus = $("self-status");
+    const selfAvatar = $("self-avatar");
+    const input = $("message-input");
+    const sendBtn = $("send-message-btn");
+    const stickerBtn = $("sticker-trigger-btn");
+    const container = $("messages-container");
+
+    if(peerName) peerName.textContent = "未选择";
+    if(peerStatus) peerStatus.textContent = "请先创建会话";
+    if(peerAvatar){ peerAvatar.innerHTML = ""; peerAvatar.textContent = "?"; }
+    if(selfName) selfName.textContent = "念培";
+    if(selfStatus) selfStatus.textContent = "";
+    if(selfAvatar){ selfAvatar.innerHTML = ""; selfAvatar.textContent = "我"; }
+
+    if(input){
+        input.value = "";
+        input.disabled = true;
+    }
+    if(sendBtn) sendBtn.disabled = true;
+    if(stickerBtn) stickerBtn.disabled = true;
+    refreshInputPlaceholder();
+
+    if(container){
+        container.innerHTML = '<div class="empty-chat-placeholder">请先点击通讯录创建或选择一个会话</div>';
+    }
+}
+
+function getCurrentColors(){
+    if(settings.themeIndex !== -1 && themes[settings.themeIndex]) return themes[settings.themeIndex];
+    return settings.customColors;
+}
+
+function refreshChat(){
+    hideMsgMenu();
+
+    const contact = getCurrentContact();
+    const container = $("messages-container");
+    const input = $("message-input");
+    const sendBtn = $("send-message-btn");
+    const stickerBtn = $("sticker-trigger-btn");
+    if(!container) return;
+
+    const colors = getCurrentColors();
+    document.documentElement.style.setProperty("--bubble-font-size", settings.bubbleFontSize + "rem");
+    document.documentElement.style.setProperty("--name-font-size", settings.nameFontSize + "rem");
+    document.documentElement.style.setProperty("--header-color", colors.headerColor || defaultSettings.customColors.headerColor);
+
+    if(!contact){
+        renderNoContact();
+        return;
+    }
+
+    if(input) input.disabled = false;
+    if(sendBtn) sendBtn.disabled = false;
+    if(stickerBtn) stickerBtn.disabled = false;
+    refreshInputPlaceholder();
+    renderQuotePreview();
+
+    $("peer-name").textContent = contact.peerName || "对方";
+    $("peer-status").textContent = contact.peerStatus || "";
+    $("self-name").textContent = contact.selfName || "我";
+    $("self-status").textContent = contact.selfStatus || "";
+
+    const peerAv = $("peer-avatar");
+    const selfAv = $("self-avatar");
+    if(contact.peerAvatar){
+        peerAv.innerHTML = `<img src="${contact.peerAvatar}" alt="peer">`;
+    }else{
+        peerAv.innerHTML = "";
+        peerAv.textContent = getInitials(contact.peerName);
+    }
+    if(contact.selfAvatar){
+        selfAv.innerHTML = `<img src="${contact.selfAvatar}" alt="self">`;
+    }else{
+        selfAv.innerHTML = "";
+        selfAv.textContent = getInitials(contact.selfName);
+    }
+
+    let html = "";
+    (contact.messages || []).forEach((msg, idx)=>{
+        const bgColor = msg.sender === "me" ? colors.myBubble : colors.otherBubble;
+        const textColor = msg.sender === "me" ? colors.myText : colors.otherText;
+        const bubbleStyle = `background:${hexToRgba(bgColor, settings.customColors.bubbleOpacity)};color:${textColor};`;
+        const quoteHtml = (msg.quote && settings.quoteEnabled)
+            ? `<div class="quote-indicator"><i class="fa-solid fa-reply"></i> ${escapeHtml(getQuoteDisplayText(msg.quote))}</div>`
+            : "";
+        const receiptHtml = (msg.sender === "me" && msg.receipt)
+            ? (settings.receiptStyle === "text"
+                ? `<span class="receipt">已读</span>`
+                : `<span class="receipt ${msg.receipt === "read" ? "read" : ""}"><i class="fa-solid fa-check-double"></i></span>`)
+            : "";
+        const contentHtml = msg.type === "sticker"
+            ? `<img class="message-sticker" src="${msg.stickerSrc}" alt="${escapeHtml(msg.stickerName || "表情包")}">`
+            : `<div class="message-text">${escapeHtml(msg.text || "")}</div>`;
+        const metaText = `${msg.time || ""}${msg.edited ? " · 已编辑" : ""}`;
+
+        html += `
+            <div class="message-row ${msg.sender === "me" ? "me" : "contact"}" data-msg-idx="${idx}">
+                <div class="message-bubble ${msg.type === "sticker" ? "sticker-bubble" : ""}" style="${bubbleStyle}">
+                    ${quoteHtml}
+                    ${contentHtml}
+                    <div class="message-time"><span>${escapeHtml(metaText)}</span>${receiptHtml}</div>
+                </div>
+            </div>
+        `;
+    });
+
+    html += `
+        <div class="typing-indicator ${pendingReplies > 0 ? "show" : ""}" id="typing-indicator">
+            <div class="typing-bubble"><span></span><span></span><span></span></div>
+        </div>
+    `;
+
+    container.innerHTML = html;
+    container.scrollTop = container.scrollHeight;
+
+    container.querySelectorAll(".message-bubble").forEach(bubble=>{
+        bubble.addEventListener("click", e=>{
+            e.stopPropagation();
+            const row = bubble.closest(".message-row");
+            if(!row) return;
+            const idx = Number(row.dataset.msgIdx);
+            const msg = contact.messages[idx];
+            if(!msg) return;
+            const rect = bubble.getBoundingClientRect();
+            const x = e.clientX || rect.left + rect.width / 2;
+            const y = e.clientY || rect.bottom;
+            showMsgMenu(x, y, idx, msg);
+        });
+    });
+}
+
+function hideMsgMenu(){
+    const menu = $("message-actions-menu");
+    if(menu){
+        menu.style.display = "none";
+        menu.style.visibility = "";
+    }
+    if(activeMenuCloseHandler){
+        window.removeEventListener("click", activeMenuCloseHandler, true);
+        activeMenuCloseHandler = null;
+    }
+}
+function showMsgMenu(x, y, idx, msg){
+    hideMsgMenu();
+    const menu = $("message-actions-menu");
+    if(!menu) return;
+
+    menu.innerHTML = `
+        <button id="action-quote"><i class="fa-solid fa-reply"></i><span>引用消息</span></button>
+        <button id="action-edit"><i class="fa-regular fa-pen-to-square"></i><span>编辑消息</span></button>
+        <button id="action-delete" class="danger"><i class="fa-regular fa-trash-can"></i><span>删除消息</span></button>
+    `;
+    menu.style.display = "flex";
+    menu.style.visibility = "hidden";
+
+    requestAnimationFrame(()=>{
+        const rect = menu.getBoundingClientRect();
+        const margin = 10;
+        const left = Math.max(margin, Math.min(x, window.innerWidth - rect.width - margin));
+        const top = Math.max(margin, Math.min(y, window.innerHeight - rect.height - margin));
+        menu.style.left = left + "px";
+        menu.style.top = top + "px";
+        menu.style.visibility = "visible";
+    });
+
+    $("action-quote").onclick = ()=>{
+        if(!settings.quoteEnabled){
+            alert("你已关闭引用回复功能");
+            hideMsgMenu();
+            return;
+        }
+        quotedMessage = {
+            type: msg.type,
+            text: msg.text || "",
+            stickerName: msg.stickerName || "表情包",
+            stickerSrc: msg.stickerSrc || null,
+            sender: msg.sender || "contact"
+        };
+        renderQuotePreview();
+        refreshInputPlaceholder();
+        $("message-input")?.focus();
+        hideMsgMenu();
+    };
+
+    $("action-edit").onclick = ()=>{
+        const contact = getCurrentContact();
+        if(!contact) return;
+        const current = contact.messages[idx];
+        if(!current) return;
+        if(current.type === "sticker"){
+            alert("表情包消息暂不支持直接编辑，你可以删除后重新发送。");
+            hideMsgMenu();
+            return;
+        }
+        const newText = prompt("编辑消息", current.text || "");
+        if(newText === null){
+            hideMsgMenu();
+            return;
+        }
+        const trimmed = newText.trim();
+        if(!trimmed){
+            alert("消息内容不能为空");
+            return;
+        }
+        current.text = trimmed;
+        current.edited = true;
+        touchContact(contact);
+        saveAll();
+        refreshChat();
+        hideMsgMenu();
+    };
+
+    $("action-delete").onclick = ()=>{
+        const contact = getCurrentContact();
+        if(!contact) return;
+        if(confirm("删除消息？")){
+            contact.messages.splice(idx, 1);
+            touchContact(contact);
+            saveAll();
+            refreshChat();
+        }
+        hideMsgMenu();
+    };
+
+    activeMenuCloseHandler = ev=>{
+        if(!menu.contains(ev.target)) hideMsgMenu();
+    };
+    setTimeout(()=>{
+        if(activeMenuCloseHandler){
+            window.addEventListener("click", activeMenuCloseHandler, true);
+        }
+    },10);
+}
+
+function getRandomWordCardText(){
+    return wordCards.length ? wordCards[Math.floor(Math.random() * wordCards.length)].text : "...";
+}
+function getRandomSticker(){
+    return stickers.length ? stickers[Math.floor(Math.random() * stickers.length)] : null;
+}
+function pushMessage(contact, msg){
+    contact.messages.push(msg);
+    touchContact(contact);
+}
+function sendTextMessage(){
+    const contactId = selectedContactId;
+    const contact = getCurrentContact();
+    const input = $("message-input");
+    if(!contact || !input) return;
+    const text = input.value.trim();
+    if(!text) return;
+
+    const newMsg = {
+        sender:"me",
+        type:"text",
+        text,
+        stickerSrc:null,
+        stickerName:"表情包",
+        time:getCurrentTime(),
+        quote: settings.quoteEnabled ? currentQuotePayload() : null,
+        receipt:null,
+        edited:false
+    };
+
+    pushMessage(contact, newMsg);
+    pendingReplies++;
+    input.value = "";
+    clearQuote();
+    saveAll();
+    refreshChat();
+    scheduleRobotReply(contactId, newMsg);
+}
+function sendStickerMessage(sticker){
+    const contactId = selectedContactId;
+    const contact = getCurrentContact();
+    if(!contact || !sticker) return;
+
+    const newMsg = {
+        sender:"me",
+        type:"sticker",
+        text:"",
+        stickerSrc: sticker.src,
+        stickerName: sticker.name || "表情包",
+        time:getCurrentTime(),
+        quote: settings.quoteEnabled ? currentQuotePayload() : null,
+        receipt:null,
+        edited:false
+    };
+
+    pushMessage(contact, newMsg);
+    pendingReplies++;
+    clearQuote();
+    saveAll();
+    refreshChat();
+    closeOverlay("sticker-overlay");
+    scheduleRobotReply(contactId, newMsg);
+}
+function scheduleRobotReply(contactId, myMsg){
+    const min = Math.min(settings.minWait, settings.maxWait);
+    const max = Math.max(settings.minWait, settings.maxWait);
+    const wait = Math.random() * (max * 1000 - min * 1000) + min * 1000;
+
+    setTimeout(()=>{
+        const liveContact = contacts.find(c=>c.id === contactId);
+        pendingReplies = Math.max(0, pendingReplies - 1);
+
+        if(!liveContact){
+            refreshChat();
+            return;
+        }
+
+        myMsg.receipt = "read";
+
+        const shouldSendSticker = settings.robotStickerEnabled && stickers.length > 0 && Math.random() < .35;
+        const replyMsg = shouldSendSticker
+            ? {
+                sender:"contact",
+                type:"sticker",
+                text:"",
+                stickerSrc:getRandomSticker().src,
+                stickerName:getRandomSticker().name || "表情包",
+                time:getCurrentTime(),
+                quote:null,
+                receipt:null,
+                edited:false
+            }
+            : {
+                sender:"contact",
+                type:"text",
+                text:getRandomWordCardText(),
+                stickerSrc:null,
+                stickerName:"表情包",
+                time:getCurrentTime(),
+                quote:null,
+                receipt:null,
+                edited:false
+            };
+
+        pushMessage(liveContact, replyMsg);
+        saveAll();
+        refreshChat();
+    }, wait);
+}
+
+function getFilteredWordCards(){
+    const keyword = wordcardSearchKeyword.trim().toLowerCase();
+    let filtered = currentGroupFilter === "all"
+        ? [...wordCards]
+        : wordCards.filter(c=>c.groupId === currentGroupFilter);
+
+    if(keyword){
+        filtered = filtered.filter(card=>{
+            const groupName = groups.find(g=>g.id === card.groupId)?.name || "默认";
+            return String(card.text).toLowerCase().includes(keyword) || String(groupName).toLowerCase().includes(keyword);
+        });
+    }
+    return filtered;
+}
+function resetWordcardSelection(){
+    wordcardSelectionMode = false;
+    selectedWordCardIds.clear();
+}
+function updateWordcardBatchBar(){
+    if(!$("toggle-wordcard-select")) return;
+    $("toggle-wordcard-select").textContent = wordcardSelectionMode ? "取消多选" : "多选";
+    $("wordcard-selected-count").textContent = wordcardSelectionMode ? `已选 ${selectedWordCardIds.size}` : "";
+    $("select-all-wordcards").disabled = !wordcardSelectionMode || !getFilteredWordCards().length;
+    $("batch-delete-wordcards").disabled = !wordcardSelectionMode || !selectedWordCardIds.size;
+    $("batch-move-wordcards").disabled = !wordcardSelectionMode || !selectedWordCardIds.size;
+}
+function renderGroupTabs(){
+    const container = $("group-tabs-container");
+    if(!container) return;
+    let html = `
+        <div class="group-tab ${currentGroupFilter === "all" ? "active" : ""}" data-group="all">
+            <i class="fa-solid fa-layer-group"></i> 全部
+        </div>
+    `;
+    groups.forEach(g=>{
+        html += `
+            <div class="group-tab ${currentGroupFilter === g.id ? "active" : ""}" data-group="${g.id}">
+                ${escapeHtml(g.name)}
+                <span class="group-actions">
+                    <i class="fa-solid fa-pen" data-action="edit" data-id="${g.id}"></i>
+                    ${g.id !== "default" ? `<i class="fa-solid fa-trash-can" data-action="delete" data-id="${g.id}"></i>` : ""}
+                </span>
+            </div>
+        `;
+    });
+    html += `<div class="add-group-btn" id="add-group-btn"><i class="fa-solid fa-plus"></i> 分组</div>`;
+    container.innerHTML = html;
+
+    container.querySelectorAll(".group-tab").forEach(tab=>{
+        tab.addEventListener("click", e=>{
+            if(e.target.tagName === "I") return;
+            currentGroupFilter = tab.dataset.group;
+            renderGroupTabs();
+            renderWordCards();
+        });
+    });
+
+    container.querySelectorAll('[data-action="edit"]').forEach(btn=>{
+        btn.addEventListener("click", e=>{
+            e.stopPropagation();
+            const group = groups.find(g=>g.id === btn.dataset.id);
+            if(!group) return;
+            const newName = prompt("修改分组名", group.name);
+            if(newName === null) return;
+            const trimmed = newName.trim();
+            if(!trimmed) return;
+            group.name = trimmed;
+            saveAll();
+            updateGroupSelect();
+            renderGroupTabs();
+            renderWordCards();
+        });
+    });
+
+    container.querySelectorAll('[data-action="delete"]').forEach(btn=>{
+        btn.addEventListener("click", e=>{
+            e.stopPropagation();
+            const id = btn.dataset.id;
+            if(id === "default") return alert("默认分组不可删除");
+            if(confirm("删除分组后，分组内字卡会移到默认分组。继续吗？")){
+                groups = groups.filter(g=>g.id !== id);
+                wordCards.forEach(c=>{ if(c.groupId === id) c.groupId = "default"; });
+                if(currentGroupFilter === id) currentGroupFilter = "all";
+                saveAll();
+                updateGroupSelect();
+                renderGroupTabs();
+                renderWordCards();
+            }
+        });
+    });
+
+    $("add-group-btn")?.addEventListener("click", ()=>{
+        const name = prompt("新分组名称");
+        if(name === null) return;
+        const trimmed = name.trim();
+        if(!trimmed) return;
+        groups.push({id:uid("g"), name:trimmed});
+        saveAll();
+        updateGroupSelect();
+        renderGroupTabs();
+        renderWordCards();
+    });
+}
+function updateGroupSelect(){
+    const select = $("new-wordcard-group");
+    if(!select) return;
+    select.innerHTML = "";
+    groups.forEach(g=>{
+        const opt = document.createElement("option");
+        opt.value = g.id;
+        opt.textContent = g.name;
+        select.appendChild(opt);
+    });
+}
+function openGroupMenu(anchorEl, onChoose, skipId=null){
+    const menu = document.createElement("div");
+    menu.className = "group-selector-menu";
+    const rect = anchorEl.getBoundingClientRect();
+    menu.style.left = rect.left + "px";
+    menu.style.top = rect.bottom + 6 + "px";
+
+    const usableGroups = groups.filter(g=>skipId ? g.id !== skipId : true);
+    if(!usableGroups.length){
+        const btn = document.createElement("button");
+        btn.textContent = "没有可选分组";
+        btn.disabled = true;
+        menu.appendChild(btn);
+    }else{
+        usableGroups.forEach(g=>{
+            const btn = document.createElement("button");
+            btn.textContent = g.name;
+            btn.onclick = ()=>{
+                onChoose(g.id);
+                menu.remove();
+            };
+            menu.appendChild(btn);
+        });
+    }
+
+    document.body.appendChild(menu);
+    const remove = ev=>{
+        if(!menu.contains(ev.target)){
+            menu.remove();
+            document.removeEventListener("click", remove);
+        }
+    };
+    setTimeout(()=>document.addEventListener("click", remove),10);
+}
+function renderWordCards(){
+    const listDiv = $("wordcard-list");
+    if(!listDiv) return;
+    const filtered = getFilteredWordCards();
+
+    if(!filtered.length){
+        listDiv.innerHTML = `<div style="color:#8a8a8a;text-align:center;padding:14px 0;">${wordcardSearchKeyword ? "没有匹配字卡" : "暂无字卡"}</div>`;
+        updateWordcardBatchBar();
+        return;
+    }
+
+    let html = "";
+    filtered.forEach(card=>{
+        const groupName = groups.find(g=>g.id === card.groupId)?.name || "默认";
+        const selected = selectedWordCardIds.has(card.id);
+        html += `
+            <div class="wordcard-item ${selected ? "selected" : ""}" data-id="${card.id}">
+                <div class="wordcard-main">
+                    <div class="wordcard-check ${wordcardSelectionMode ? "show" : ""}">
+                        <input type="checkbox" ${selected ? "checked" : ""}>
+                    </div>
+                    <div class="wordcard-text">
+                        <div class="wordcard-text-main">
+                            ${escapeHtml(card.text)}
+                            <span class="wordcard-group-badge">${escapeHtml(groupName)}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="wordcard-actions">
+                    <button class="move-wordcard" title="移动分组"><i class="fa-solid fa-folder-open"></i></button>
+                    <button class="edit-wordcard" title="编辑"><i class="fa-regular fa-pen-to-square"></i></button>
+                    <button class="delete-wordcard" title="删除"><i class="fa-regular fa-trash-can"></i></button>
+                </div>
+            </div>
+        `;
+    });
+    listDiv.innerHTML = html;
+
+    listDiv.querySelectorAll(".wordcard-item").forEach(item=>{
+        item.addEventListener("click", e=>{
+            if(e.target.closest("button")) return;
+            const id = item.dataset.id;
+            const card = wordCards.find(c=>c.id === id);
+            if(!card) return;
+
+            if(wordcardSelectionMode){
+                if(selectedWordCardIds.has(id)) selectedWordCardIds.delete(id);
+                else selectedWordCardIds.add(id);
+                renderWordCards();
+                return;
+            }
+
+            const input = $("message-input");
+            if(input){
+                input.value = card.text;
+                closeOverlay("wordcard-overlay");
+                input.focus();
+            }
+        });
+    });
+
+    listDiv.querySelectorAll(".edit-wordcard").forEach(btn=>{
+        btn.addEventListener("click", e=>{
+            e.stopPropagation();
+            const id = btn.closest(".wordcard-item")?.dataset.id;
+            const card = wordCards.find(c=>c.id === id);
+            if(!card) return;
+            const newText = prompt("修改字卡", card.text);
+            if(newText === null) return;
+            const trimmed = newText.trim();
+            if(!trimmed) return;
+            card.text = trimmed;
+            saveAll();
+            renderWordCards();
+        });
+    });
+
+    listDiv.querySelectorAll(".delete-wordcard").forEach(btn=>{
+        btn.addEventListener("click", e=>{
+            e.stopPropagation();
+            const id = btn.closest(".wordcard-item")?.dataset.id;
+            if(confirm("删除字卡？")){
+                wordCards = wordCards.filter(c=>c.id !== id);
+                selectedWordCardIds.delete(id);
+                saveAll();
+                renderWordCards();
+            }
+        });
+    });
+
+    listDiv.querySelectorAll(".move-wordcard").forEach(btn=>{
+        btn.addEventListener("click", e=>{
+            e.stopPropagation();
+            const id = btn.closest(".wordcard-item")?.dataset.id;
+            const card = wordCards.find(c=>c.id === id);
+            if(!card) return;
+            openGroupMenu(btn, groupId=>{
+                card.groupId = groupId;
+                saveAll();
+                renderWordCards();
+            }, card.groupId);
+        });
+    });
+
+    updateWordcardBatchBar();
+}
+function addWordCard(){
+    const input = $("new-wordcard-input");
+    const groupSelect = $("new-wordcard-group");
+    if(!input || !groupSelect) return;
+    const text = input.value.trim();
+    if(!text) return;
+    const groupId = groups.some(g=>g.id === groupSelect.value) ? groupSelect.value : "default";
+    wordCards.push({id:uid("wc"), text, groupId});
+    input.value = "";
+    saveAll();
+    renderWordCards();
+}
+function exportWordCards(){
+    const payload = {
+        version:3,
+        exportAt:new Date().toISOString(),
+        groups,
+        wordCards
+    };
+    const stamp = new Date().toISOString().replace(/[:.]/g,"-");
+    downloadJson(`wordcards-${stamp}.json`, payload);
+}
+function importWordCardsFromParsed(data){
+    const beforeCount = groups.length;
+    let importedCards = 0;
+    const groupIdMap = {};
+
+    const registerGroup = raw=>{
+        if(!raw) return null;
+        let oldId = null;
+        let name = "";
+        if(typeof raw === "string") name = raw.trim();
+        else{
+            oldId = raw.id ? String(raw.id) : null;
+            name = String(raw.name || "").trim();
+        }
+        if(!name) return null;
+
+        const existed = groups.find(g=>g.name === name);
+        if(existed){
+            if(oldId) groupIdMap[oldId] = existed.id;
+            return existed.id;
+        }
+        const id = uniqueGroupId(oldId);
+        groups.push({id,name});
+        if(oldId) groupIdMap[oldId] = id;
+        return id;
+    };
+
+    if(data && typeof data === "object" && !Array.isArray(data) && Array.isArray(data.groups)){
+        data.groups.forEach(registerGroup);
+    }
+
+    let cards = [];
+    if(Array.isArray(data)) cards = data;
+    else if(data && typeof data === "object") cards = data.wordCards || data.cards || data.items || [];
+    else throw new Error("格式错误");
+    if(!Array.isArray(cards)) throw new Error("格式错误");
+
+    cards.forEach(item=>{
+        let text = "";
+        let groupId = "default";
+        let preferredId = null;
+
+        if(typeof item === "string"){
+            text = item.trim();
+        }else if(item && typeof item === "object"){
+            preferredId = item.id ? String(item.id) : null;
+            text = String(item.text ?? item.content ?? "").trim();
+            if(item.groupId){
+                const rawId = String(item.groupId);
+                if(groups.some(g=>g.id === rawId)) groupId = rawId;
+                else if(groupIdMap[rawId]) groupId = groupIdMap[rawId];
+            }
+            if(groupId === "default" && item.groupName){
+                groupId = ensureGroupByName(item.groupName);
+            }
+        }
+
+        if(text){
+            wordCards.push({
+                id: uniqueWordCardId(preferredId),
+                text,
+                groupId
+            });
+            importedCards++;
+        }
+    });
+
+    return {
+        importedCards,
+        importedGroups: groups.length - beforeCount
+    };
+}
+function importWordCards(){
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json,application/json";
+    input.onchange = e=>{
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = ev=>{
+            try{
+                const data = JSON.parse(ev.target.result);
+                const result = importWordCardsFromParsed(data);
+                saveAll();
+                updateGroupSelect();
+                renderGroupTabs();
+                renderWordCards();
+                alert(`导入成功：${result.importedCards} 张字卡，${result.importedGroups} 个新分组`);
+            }catch(err){
+                alert("导入失败：请使用 JSON 数组，或 { groups:[], wordCards:[] } 格式。");
+            }
+        };
+        reader.readAsText(file, "utf-8");
+    };
+    input.click();
+}
+
+function renderContactList(){
+    const list = $("contact-list");
+    if(!list) return;
+    const sortedContacts = getSortedContacts();
+    if(!sortedContacts.length){
+        list.innerHTML = '<div style="color:#8a8a8a;text-align:center;padding:16px 0;">暂无会话</div>';
+        return;
+    }
+    list.innerHTML = sortedContacts.map(c=>`
+        <div class="contact-item ${c.id === selectedContactId ? "active" : ""}" data-id="${c.id}">
+            <div class="contact-main">
+                <strong>${escapeHtml(c.peerName)}</strong>
+                <div class="contact-sub">${c.pinned ? "📌 已置顶 · " : ""}最近活跃：${escapeHtml(formatShortDateTime(c.lastActive || c.createdAt))}</div>
+            </div>
+            <div class="contact-actions">
+                <button class="pin-contact ${c.pinned ? "active" : ""}" title="${c.pinned ? "取消置顶" : "置顶"}"><i class="fa-solid fa-thumbtack"></i></button>
+                <button class="delete-contact" title="删除会话"><i class="fa-regular fa-trash-can"></i></button>
+            </div>
+        </div>
+    `).join("");
+
+    list.querySelectorAll(".contact-item").forEach(item=>{
+        const id = item.dataset.id;
+        item.addEventListener("click", e=>{
+            if(e.target.closest(".pin-contact") || e.target.closest(".delete-contact")) return;
+            if(id !== selectedContactId){
+                selectedContactId = id;
+                saveAll();
+                refreshChat();
+                closeOverlay("contact-overlay");
+            }
+        });
+        item.querySelector(".pin-contact")?.addEventListener("click", e=>{
+            e.stopPropagation();
+            const contact = contacts.find(c=>c.id === id);
+            if(!contact) return;
+            contact.pinned = !contact.pinned;
+            saveAll();
+            renderContactList();
+        });
+        item.querySelector(".delete-contact")?.addEventListener("click", e=>{
+            e.stopPropagation();
+            if(confirm("删除会话？")){
+                contacts = contacts.filter(c=>c.id !== id);
+                if(selectedContactId === id){
+                    selectedContactId = getSortedContacts()[0]?.id || null;
+                }
+                saveAll();
+                renderContactList();
+                refreshChat();
+            }
+        });
+    });
+}
+function createNewContact(){
+    const name = prompt("输入对方昵称", "新朋友");
+    if(name === null) return;
+    const trimmed = name.trim();
+    if(!trimmed) return;
+    const now = new Date().toISOString();
+    const newId = uid("c");
+    contacts.push({
+        id:newId,
+        peerName:trimmed,
+        peerAvatar:null,
+        peerStatus:"在线",
+        selfName:"念培",
+        selfAvatar:null,
+        selfStatus:"想喝椰汁",
+        createdAt:now,
+        lastActive:now,
+        pinned:false,
+        messages:[]
+    });
+    selectedContactId = newId;
+    saveAll();
+    renderContactList();
+    refreshChat();
+    closeOverlay("contact-overlay");
+}
+function exportChats(){
+    const stamp = new Date().toISOString().replace(/[:.]/g,"-");
+    downloadJson(`chat-records-${stamp}.json`, {
+        version:3,
+        exportAt:new Date().toISOString(),
+        selectedContactId,
+        contacts
+    });
+}
+function importChats(){
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json,application/json";
+    input.onchange = e=>{
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = ev=>{
+            try{
+                const data = JSON.parse(ev.target.result);
+                const importedContacts = Array.isArray(data) ? data : data.contacts;
+                if(!Array.isArray(importedContacts) || !importedContacts.length){
+                    throw new Error("无会话数据");
+                }
+                if(!confirm("导入会覆盖当前聊天记录，是否继续？")) return;
+                contacts = importedContacts.map(normalizeContact);
+                selectedContactId = data.selectedContactId && contacts.some(c=>c.id === data.selectedContactId)
+                    ? data.selectedContactId
+                    : (getSortedContacts()[0]?.id || contacts[0]?.id || null);
+                quotedMessage = null;
+                pendingReplies = 0;
+                saveAll();
+                renderContactList();
+                refreshChat();
+                alert("聊天记录导入成功");
+            }catch(err){
+                alert("导入失败：请确认文件为本页面导出的聊天记录 JSON。");
+            }
+        };
+        reader.readAsText(file, "utf-8");
+    };
+    input.click();
+}
+
+function renderStatusList(target){
+    const list = $("status-list");
+    if(!list) return;
+    if(!statuses.length){
+        list.innerHTML = '<div style="color:#8a8a8a;text-align:center;padding:16px 0;">暂无状态</div>';
+        return;
+    }
+    list.innerHTML = statuses.map((st, idx)=>`
+        <div class="status-item" data-idx="${idx}">
+            <span style="flex:1;cursor:pointer;">${escapeHtml(st)}</span>
+            <div>
+                <button class="edit-status"><i class="fa-regular fa-pen-to-square"></i></button>
+                <button class="delete-status"><i class="fa-regular fa-trash-can"></i></button>
+            </div>
+        </div>
+    `).join("");
+
+    list.querySelectorAll(".status-item").forEach(item=>{
+        const idx = Number(item.dataset.idx);
+        item.querySelector("span")?.addEventListener("click", ()=>{
+            const contact = getCurrentContact();
+            if(!contact) return;
+            if(target === "peer") contact.peerStatus = statuses[idx];
+            else contact.selfStatus = statuses[idx];
+            saveAll();
+            refreshChat();
+            closeOverlay("status-overlay");
+        });
+        item.querySelector(".edit-status")?.addEventListener("click", ()=>{
+            const newVal = prompt("修改状态", statuses[idx]);
+            if(newVal === null) return;
+            const trimmed = newVal.trim();
+            if(!trimmed) return;
+            statuses[idx] = trimmed;
+            saveAll();
+            renderStatusList(target);
+        });
+        item.querySelector(".delete-status")?.addEventListener("click", ()=>{
+            if(confirm("删除状态？")){
+                statuses.splice(idx,1);
+                saveAll();
+                renderStatusList(target);
+            }
+        });
+    });
+}
+
+function syncColorInputs(){
+    const colors = getCurrentColors();
+    const pairs = {
+        "my-bubble-color": colors.myBubble,
+        "other-bubble-color": colors.otherBubble,
+        "my-text-color": colors.myText,
+        "other-text-color": colors.otherText,
+        "ui-color": colors.headerColor || defaultSettings.customColors.headerColor
+    };
+    Object.entries(pairs).forEach(([id,val])=>{
+        const el = $(id);
+        if(el) el.value = val;
+    });
+    if($("bubble-opacity")) $("bubble-opacity").value = settings.customColors.bubbleOpacity;
+    if($("bubble-opacity-val")) $("bubble-opacity-val").textContent = settings.customColors.bubbleOpacity;
+}
+function updateReceiptOptionsUI(){
+    document.querySelectorAll(".receipt-option").forEach(opt=>{
+        const input = opt.querySelector("input");
+        opt.classList.toggle("selected", !!(input && input.checked));
+    });
+}
+function applyBgAndFont(){
+    const container = $("messages-container");
+    if(container){
+        container.style.setProperty("--chat-bg-image", settings.bgImage ? `url("${settings.bgImage}")` : "none");
+        container.style.setProperty("--chat-bg-opacity", settings.bgOpacity);
+        container.style.setProperty("--chat-bg-blur", settings.bgBlur + "px");
+    }
+    document.documentElement.style.setProperty("--name-font-size", settings.nameFontSize + "rem");
+    document.documentElement.style.setProperty("--bubble-font-size", settings.bubbleFontSize + "rem");
+    refreshChat();
+}
+function renderThemeGrid(){
+    const grid = $("theme-grid");
+    if(!grid) return;
+    grid.innerHTML = "";
+    themes.forEach((t, i)=>{
+        const div = document.createElement("div");
+        div.className = "theme-item";
+        div.style.background = `linear-gradient(135deg, ${t.myBubble}, ${t.otherBubble})`;
+        div.textContent = t.name;
+        div.addEventListener("click", ()=>{
+            settings.themeIndex = i;
+            settings.customColors = {
+                ...settings.customColors,
+                myBubble:t.myBubble,
+                otherBubble:t.otherBubble,
+                myText:t.myText,
+                otherText:t.otherText,
+                headerColor:t.headerColor
+            };
+            saveAll();
+            syncColorInputs();
+            applyBgAndFont();
+            closeOverlay("theme-overlay");
+            openOverlay("appearance-overlay");
+        });
+        grid.appendChild(div);
+    });
+}
+
+function renderStickerGrid(){
+    const grid = $("sticker-grid");
+    if(!grid) return;
+    if(!stickers.length){
+        grid.innerHTML = `<div class="sticker-empty" style="grid-column:1/-1;">暂无表情包，请先上传 JPG / PNG</div>`;
+        return;
+    }
+    grid.innerHTML = stickers.map(st=>`
+        <div class="sticker-item" data-id="${st.id}">
+            ${st.builtin ? "" : `<button class="sticker-delete" data-id="${st.id}" title="删除"><i class="fa-solid fa-xmark"></i></button>`}
+            <img class="sticker-thumb" src="${st.src}" alt="${escapeHtml(st.name)}">
+            <div class="sticker-name">${escapeHtml(st.name)}</div>
+        </div>
+    `).join("");
+
+    grid.querySelectorAll(".sticker-item").forEach(item=>{
+        item.addEventListener("click", ()=>{
+            const sticker = stickers.find(s=>s.id === item.dataset.id);
+            if(sticker) sendStickerMessage(sticker);
+        });
+    });
+
+    grid.querySelectorAll(".sticker-delete").forEach(btn=>{
+        btn.addEventListener("click", e=>{
+            e.stopPropagation();
+            const id = btn.dataset.id;
+            if(confirm("删除这个表情包？")){
+                stickers = stickers.filter(s=>s.id !== id);
+                saveAll();
+                renderStickerGrid();
+            }
+        });
+    });
+}
+function handleStickerUpload(files){
+    const validFiles = [...files].filter(file=>file && file.type.startsWith("image/"));
+    if(!validFiles.length) return;
+    Promise.all(validFiles.map(file=>new Promise((resolve,reject)=>{
+        const reader = new FileReader();
+        reader.onload = ()=>resolve({
+            id: uid("st"),
+            name: file.name.replace(/\.[^.]+$/,"").slice(0,14) || "表情包",
+            src: reader.result,
+            builtin:false
+        });
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    }))).then(items=>{
+        stickers.push(...items);
+        saveAll();
+        renderStickerGrid();
+    }).catch(()=>{
+        alert("上传失败，请重试");
+    });
+}
+
+function shuffleDeck(){
+    const arr = [...FULL_TAROT];
+    for(let i = arr.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+function openTarotImagePicker(name, imgEl){
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = ev=>{
+        const file = ev.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = e=>{
+            imgEl.src = e.target.result;
+            localStorage.setItem(`tarot_img_${name}`, e.target.result);
+        };
+        reader.readAsDataURL(file);
+    };
+    input.click();
+}
+function renderTarotShuffle(){
+    const container = $("tarot-result-area");
+    if(!container) return;
+    container.className = "tarot-result";
+    container.innerHTML = `
+        <div class="tarot-shuffle-scene">
+            <div class="shuffle-card c1"></div>
+            <div class="shuffle-card c2"></div>
+            <div class="shuffle-card c3"></div>
+            <div class="shuffle-card c4"></div>
+            <div class="shuffle-card c5"></div>
+        </div>
+        <div class="soft-tip" style="width:100%;text-align:center;">正在洗牌...</div>
+    `;
+}
+function renderTarotSpread(cards, mode){
+    const container = $("tarot-result-area");
+    if(!container) return;
+    const cfg = tarotSpreads[mode] || tarotSpreads.single;
+    container.className = `tarot-result tarot-spread spread-${cfg.className}`;
+    container.innerHTML = cards.map((card, i)=>`
+        <div class="tarot-card slot-${i + 1}">
+            <div class="tarot-slot">${cfg.slots[i] || ""}</div>
+            <div class="tarot-flip-wrap">
+                <div class="tarot-flip-inner">
+                    <div class="tarot-face tarot-back">
+                        <div class="tarot-back-inner">
+                            <i class="fa-solid fa-star-and-crescent"></i>
+                            <div style="font-size:.7rem;">点击翻牌</div>
+                        </div>
+                    </div>
+                    <div class="tarot-face tarot-front">
+                        <img src="${card.src}" alt="${escapeHtml(card.name)}">
+                    </div>
+                </div>
+            </div>
+            <div class="tarot-hint">点击翻牌</div>
+            <div class="tarot-meta">
+                <div class="tarot-name">${escapeHtml(card.name)}</div>
+                <div class="tarot-reversed">${card.orientation === "逆位" ? "⚡ 逆位" : "✨ 正位"}</div>
+                <button class="tarot-change-image">换图</button>
+            </div>
+        </div>
+    `).join("");
+
+    container.querySelectorAll(".tarot-card").forEach((cardEl, idx)=>{
+        const flip = cardEl.querySelector(".tarot-flip-wrap");
+        const img = cardEl.querySelector("img");
+        const btn = cardEl.querySelector(".tarot-change-image");
+        flip.addEventListener("click", ()=>cardEl.classList.add("revealed"));
+        btn.addEventListener("click", e=>{
+            e.stopPropagation();
+            openTarotImagePicker(cards[idx].name, img);
+        });
+    });
+}
+function startTarotDraw(){
+    if(tarotDrawing) return;
+    const question = $("tarot-question")?.value.trim();
+    const mode = $("tarot-spread-mode")?.value || "single";
+    const cfg = tarotSpreads[mode] || tarotSpreads.single;
+
+    if(!question){
+        alert("请先输入问题");
+        return;
+    }
+
+    tarotDrawing = true;
+    $("tarot-draw-btn").disabled = true;
+    renderTarotShuffle();
+
+    setTimeout(()=>{
+        const deck = shuffleDeck();
+        const drawn = deck.slice(0, cfg.count).map(name=>({
+            name,
+            orientation: randomOrientation(),
+            src: getTarotImage(name)
+        }));
+        renderTarotSpread(drawn, mode);
+        tarotDrawing = false;
+        $("tarot-draw-btn").disabled = false;
+    }, 1400);
+}
+
+function initData(){
+    contacts = readJSON("orchard_contacts", []);
+    if(!Array.isArray(contacts)) contacts = [];
+    contacts = contacts.map(normalizeContact);
+
+    const legacySeedTexts = ["今天果园的椰子熟了"];
+    contacts.forEach(contact=>{
+        const allText = contact.messages.map(m=>String(m.text || "")).join("||");
+        if(legacySeedTexts.some(t=>allText.includes(t))){
+            contact.messages = [];
+        }
+    });
+
+    if(!contacts.length){
+        const now = new Date().toISOString();
+        contacts = [{
+            id:"c1",
+            peerName:"陆沉",
+            peerAvatar:null,
+            peerStatus:"在线",
+            selfName:"念培",
+            selfAvatar:null,
+            selfStatus:"想喝椰汁",
+            createdAt:now,
+            lastActive:now,
+            pinned:false,
+            messages:[]
+        }];
+        selectedContactId = "c1";
+    }else{
+        selectedContactId = localStorage.getItem("orchard_selected");
+        if(!selectedContactId || !contacts.some(c=>c.id === selectedContactId)){
+            selectedContactId = getSortedContacts()[0]?.id || contacts[0]?.id || null;
+        }
+    }
+
+    groups = readJSON("orchard_groups", []);
+    if(!Array.isArray(groups)) groups = [];
+    if(!groups.some(g=>g.id === "default")) groups.unshift({id:"default", name:"默认"});
+
+    wordCards = readJSON("orchard_wordcards_v2", []);
+    if(!Array.isArray(wordCards)) wordCards = [];
+    wordCards = wordCards.map((item, i)=>{
+        if(typeof item === "string"){
+            return {id:uid("wc") + "_" + i, text:item, groupId:"default"};
+        }
+        return {
+            id: item.id || uid("wc") + "_" + i,
+            text: String(item.text || ""),
+            groupId: item.groupId || "default"
+        };
+    }).filter(item=>item.text);
+    if(!wordCards.length){
+        wordCards = [
+            {id:"wc1", text:"不来找我", groupId:"default"},
+            {id:"wc2", text:"没好好照顾自己", groupId:"default"},
+            {id:"wc3", text:"别喝冰的", groupId:"default"}
+        ];
+    }
+    wordCards.forEach(c=>{
+        if(!c.groupId || !groups.some(g=>g.id === c.groupId)) c.groupId = "default";
+    });
+
+    statuses = readJSON("orchard_statuses", []);
+    if(!Array.isArray(statuses) || !statuses.length){
+        statuses = ["在线","忙碌","想喝椰汁","发呆","开心"];
+    }
+
+    const storedSettings = readJSON("orchard_settings", null);
+    if(storedSettings){
+        settings = {
+            ...defaultSettings,
+            ...storedSettings,
+            customColors:{
+                ...defaultSettings.customColors,
+                ...(storedSettings.customColors || {})
+            }
+        };
+    }
+
+    stickers = readJSON("orchard_stickers_v1", []);
+    if(!Array.isArray(stickers)) stickers = [];
+    stickers = stickers.map(normalizeSticker).filter(Boolean);
+    if(!stickers.length){
+        stickers = defaultStickerPack();
+    }
+}
+
+function bindEvents(){
+    $("send-message-btn").addEventListener("click", sendTextMessage);
     $("message-input").addEventListener("keypress", e=>{
-        if(e.key === "Enter") sendMessage();
+        if(e.key === "Enter") sendTextMessage();
+    });
+    $("quote-preview-close").addEventListener("click", clearQuote);
+    $("sticker-trigger-btn").addEventListener("click", ()=>{
+        renderStickerGrid();
+        openOverlay("sticker-overlay");
     });
 
     $("contact-icon").addEventListener("click", ()=>{
         renderContactList();
         openOverlay("contact-overlay");
     });
-
     $("wordcard-icon").addEventListener("click", ()=>{
         renderGroupTabs();
         updateGroupSelect();
@@ -2604,33 +3202,65 @@ function bindEvents(){
         renderWordCards();
         openOverlay("wordcard-overlay");
     });
-
     $("settings-icon").addEventListener("click", ()=>openOverlay("settings-main-overlay"));
 
     $("new-contact").addEventListener("click", createNewContact);
-    $("add-wordcard").addEventListener("click", addWordCard);
+    $("import-chat").addEventListener("click", importChats);
+    $("export-chat").addEventListener("click", exportChats);
 
     $("wordcard-search").addEventListener("input", e=>{
         wordcardSearchKeyword = e.target.value;
         renderWordCards();
     });
-
+    $("add-wordcard").addEventListener("click", addWordCard);
     $("upload-wordcard").addEventListener("click", importWordCards);
     $("export-wordcard").addEventListener("click", exportWordCards);
 
+    $("toggle-wordcard-select").addEventListener("click", ()=>{
+        wordcardSelectionMode = !wordcardSelectionMode;
+        if(!wordcardSelectionMode) selectedWordCardIds.clear();
+        renderWordCards();
+    });
+    $("select-all-wordcards").addEventListener("click", ()=>{
+        getFilteredWordCards().forEach(card=>selectedWordCardIds.add(card.id));
+        renderWordCards();
+    });
+    $("batch-delete-wordcards").addEventListener("click", ()=>{
+        if(!selectedWordCardIds.size) return;
+        if(confirm(`删除所选 ${selectedWordCardIds.size} 张字卡？`)){
+            wordCards = wordCards.filter(card=>!selectedWordCardIds.has(card.id));
+            selectedWordCardIds.clear();
+            saveAll();
+            renderWordCards();
+        }
+    });
+    $("batch-move-wordcards").addEventListener("click", e=>{
+        if(!selectedWordCardIds.size) return;
+        openGroupMenu(e.currentTarget, groupId=>{
+            wordCards.forEach(card=>{
+                if(selectedWordCardIds.has(card.id)) card.groupId = groupId;
+            });
+            saveAll();
+            renderWordCards();
+        });
+    });
+
+    $("sticker-upload").addEventListener("change", e=>{
+        handleStickerUpload(e.target.files || []);
+        e.target.value = "";
+    });
+
     $("add-status").addEventListener("click", ()=>{
-        const el = $("new-status");
-        const t = el.value.trim();
-        if(!t) return;
-        statuses.push(t);
-        el.value = "";
+        const val = $("new-status").value.trim();
+        if(!val) return;
+        statuses.push(val);
+        $("new-status").value = "";
         saveAll();
         renderStatusList(currentStatusTarget);
     });
-
     $("random-status").addEventListener("click", ()=>{
         if(!statuses.length) return;
-        const contact = contacts.find(c=>c.id === selectedContactId);
+        const contact = getCurrentContact();
         if(!contact) return;
         const r = statuses[Math.floor(Math.random() * statuses.length)];
         if(currentStatusTarget === "peer") contact.peerStatus = r;
@@ -2640,61 +3270,47 @@ function bindEvents(){
         closeOverlay("status-overlay");
     });
 
-    document.querySelectorAll("#wordcard-close,#wordcard-close2").forEach(btn=>{
-        btn.addEventListener("click", ()=>closeOverlay("wordcard-overlay"));
-    });
-    document.querySelectorAll("#contact-close,#contact-close2").forEach(btn=>{
-        btn.addEventListener("click", ()=>closeOverlay("contact-overlay"));
-    });
-    document.querySelectorAll("#status-close,#status-close2").forEach(btn=>{
-        btn.addEventListener("click", ()=>closeOverlay("status-overlay"));
-    });
-    document.querySelectorAll("#settings-close,#settings-close2").forEach(btn=>{
-        btn.addEventListener("click", ()=>closeOverlay("settings-main-overlay"));
-    });
-
     $("peer-avatar").addEventListener("click", ()=>{
-        const contact = contacts.find(c=>c.id === selectedContactId);
+        const contact = getCurrentContact();
         if(!contact) return;
         const input = document.createElement("input");
         input.type = "file";
         input.accept = "image/*";
         input.onchange = e=>{
-            const f = e.target.files[0];
-            if(!f) return;
-            const r = new FileReader();
-            r.onload = ev=>{
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = ev=>{
                 contact.peerAvatar = ev.target.result;
                 saveAll();
                 refreshChat();
+                renderContactList();
             };
-            r.readAsDataURL(f);
+            reader.readAsDataURL(file);
         };
         input.click();
     });
-
     $("self-avatar").addEventListener("click", ()=>{
-        const contact = contacts.find(c=>c.id === selectedContactId);
+        const contact = getCurrentContact();
         if(!contact) return;
         const input = document.createElement("input");
         input.type = "file";
         input.accept = "image/*";
         input.onchange = e=>{
-            const f = e.target.files[0];
-            if(!f) return;
-            const r = new FileReader();
-            r.onload = ev=>{
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = ev=>{
                 contact.selfAvatar = ev.target.result;
                 saveAll();
                 refreshChat();
             };
-            r.readAsDataURL(f);
+            reader.readAsDataURL(file);
         };
         input.click();
     });
-
     $("peer-name").addEventListener("click", ()=>{
-        const contact = contacts.find(c=>c.id === selectedContactId);
+        const contact = getCurrentContact();
         if(!contact) return;
         const newName = prompt("修改对方昵称", contact.peerName);
         if(newName === null) return;
@@ -2705,9 +3321,8 @@ function bindEvents(){
         refreshChat();
         renderContactList();
     });
-
     $("self-name").addEventListener("click", ()=>{
-        const contact = contacts.find(c=>c.id === selectedContactId);
+        const contact = getCurrentContact();
         if(!contact) return;
         const newName = prompt("修改我的昵称", contact.selfName);
         if(newName === null) return;
@@ -2717,171 +3332,197 @@ function bindEvents(){
         saveAll();
         refreshChat();
     });
+   $("peer-status").addEventListener("click", ()=>{
+    if(!getCurrentContact()) return;
+    currentStatusTarget = "peer";
+    renderStatusList(currentStatusTarget);
+    openOverlay("status-overlay");
+});
 
-    $("peer-status").addEventListener("click", ()=>{
-        if(!contacts.find(c=>c.id === selectedContactId)) return;
-        currentStatusTarget = "peer";
-        renderStatusList(currentStatusTarget);
-        openOverlay("status-overlay");
-    });
+$("self-status").addEventListener("click", ()=>{
+    if(!getCurrentContact()) return;
+    currentStatusTarget = "self";
+    renderStatusList(currentStatusTarget);
+    openOverlay("status-overlay");
+});
 
-    $("self-status").addEventListener("click", ()=>{
-        if(!contacts.find(c=>c.id === selectedContactId)) return;
-        currentStatusTarget = "self";
-        renderStatusList(currentStatusTarget);
-        openOverlay("status-overlay");
-    });
+/* 各浮层关闭 */
+document.querySelectorAll("#wordcard-close,#wordcard-close2").forEach(btn=>{
+    btn.addEventListener("click", ()=>closeOverlay("wordcard-overlay"));
+});
+document.querySelectorAll("#sticker-close,#sticker-close2").forEach(btn=>{
+    btn.addEventListener("click", ()=>closeOverlay("sticker-overlay"));
+});
+document.querySelectorAll("#contact-close,#contact-close2").forEach(btn=>{
+    btn.addEventListener("click", ()=>closeOverlay("contact-overlay"));
+});
+document.querySelectorAll("#status-close,#status-close2").forEach(btn=>{
+    btn.addEventListener("click", ()=>closeOverlay("status-overlay"));
+});
+document.querySelectorAll("#settings-close,#settings-close2").forEach(btn=>{
+    btn.addEventListener("click", ()=>closeOverlay("settings-main-overlay"));
+});
+document.querySelectorAll("#appearance-close,#appearance-close2").forEach(btn=>{
+    btn.addEventListener("click", ()=>closeOverlay("appearance-overlay"));
+});
+document.querySelectorAll("#theme-close,#theme-close2").forEach(btn=>{
+    btn.addEventListener("click", ()=>closeOverlay("theme-overlay"));
+});
+document.querySelectorAll("#bubble-color-close,#bubble-color-close2").forEach(btn=>{
+    btn.addEventListener("click", ()=>closeOverlay("bubble-color-overlay"));
+});
+document.querySelectorAll("#font-adjust-close,#font-adjust-close2").forEach(btn=>{
+    btn.addEventListener("click", ()=>closeOverlay("font-adjust-overlay"));
+});
+document.querySelectorAll("#background-close,#background-close2").forEach(btn=>{
+    btn.addEventListener("click", ()=>closeOverlay("background-overlay"));
+});
+document.querySelectorAll("#chat-settings-close,#chat-settings-close2").forEach(btn=>{
+    btn.addEventListener("click", ()=>closeOverlay("chat-settings-main-overlay"));
+});
+document.querySelectorAll("#tarot-close,#tarot-close2").forEach(btn=>{
+    btn.addEventListener("click", ()=>closeOverlay("tarot-overlay"));
+});
 
-    /* 外观设置 */
-    $("open-appearance").addEventListener("click", ()=>{
-        closeOverlay("settings-main-overlay");
-        openOverlay("appearance-overlay");
-    });
-    $("appearance-close").addEventListener("click", ()=>closeOverlay("appearance-overlay"));
-    $("appearance-close2").addEventListener("click", ()=>closeOverlay("appearance-overlay"));
-    $("appearance-back").addEventListener("click", ()=>{
-        closeOverlay("appearance-overlay");
-        openOverlay("settings-main-overlay");
-    });
+/* 外观设置 */
+$("open-appearance").addEventListener("click", ()=>{
+    closeOverlay("settings-main-overlay");
+    openOverlay("appearance-overlay");
+});
+$("appearance-back").addEventListener("click", ()=>{
+    closeOverlay("appearance-overlay");
+    openOverlay("settings-main-overlay");
+});
 
-    $("open-theme").addEventListener("click", ()=>{
-        renderThemeGrid();
-        closeOverlay("appearance-overlay");
-        openOverlay("theme-overlay");
-    });
-    $("theme-back").addEventListener("click", ()=>{
-        closeOverlay("theme-overlay");
-        openOverlay("appearance-overlay");
-    });
-    $("theme-close").addEventListener("click", ()=>closeOverlay("theme-overlay"));
-    $("theme-close2").addEventListener("click", ()=>closeOverlay("theme-overlay"));
+$("open-theme").addEventListener("click", ()=>{
+    renderThemeGrid();
+    closeOverlay("appearance-overlay");
+    openOverlay("theme-overlay");
+});
+$("theme-back").addEventListener("click", ()=>{
+    closeOverlay("theme-overlay");
+    openOverlay("appearance-overlay");
+});
 
-    $("open-bubble-color").addEventListener("click", ()=>{
-        syncColorInputs();
-        closeOverlay("appearance-overlay");
-        openOverlay("bubble-color-overlay");
-    });
-    $("bubble-color-back").addEventListener("click", ()=>{
-        closeOverlay("bubble-color-overlay");
-        openOverlay("appearance-overlay");
-    });
-    $("bubble-color-close").addEventListener("click", ()=>closeOverlay("bubble-color-overlay"));
-    $("bubble-color-close2").addEventListener("click", ()=>closeOverlay("bubble-color-overlay"));
+$("open-bubble-color").addEventListener("click", ()=>{
+    syncColorInputs();
+    closeOverlay("appearance-overlay");
+    openOverlay("bubble-color-overlay");
+});
+$("bubble-color-back").addEventListener("click", ()=>{
+    closeOverlay("bubble-color-overlay");
+    openOverlay("appearance-overlay");
+});
 
-    $("my-bubble-color").addEventListener("input", e=>{
-        settings.themeIndex = -1;
-        settings.customColors.myBubble = e.target.value;
-        saveAll();
-        refreshChat();
-    });
-    $("other-bubble-color").addEventListener("input", e=>{
-        settings.themeIndex = -1;
-        settings.customColors.otherBubble = e.target.value;
-        saveAll();
-        refreshChat();
-    });
-    $("my-text-color").addEventListener("input", e=>{
-        settings.themeIndex = -1;
-        settings.customColors.myText = e.target.value;
-        saveAll();
-        refreshChat();
-    });
-    $("other-text-color").addEventListener("input", e=>{
-        settings.themeIndex = -1;
-        settings.customColors.otherText = e.target.value;
-        saveAll();
-        refreshChat();
-    });
-    $("ui-color").addEventListener("input", e=>{
-        settings.themeIndex = -1;
-        settings.customColors.headerColor = e.target.value;
-        saveAll();
-        refreshChat();
-    });
-    $("bubble-opacity").addEventListener("input", e=>{
-        settings.customColors.bubbleOpacity = parseFloat(e.target.value);
-        $("bubble-opacity-val").textContent = e.target.value;
-        saveAll();
-        refreshChat();
-    });
+$("my-bubble-color").addEventListener("input", e=>{
+    settings.themeIndex = -1;
+    settings.customColors.myBubble = e.target.value;
+    saveAll();
+    refreshChat();
+});
+$("other-bubble-color").addEventListener("input", e=>{
+    settings.themeIndex = -1;
+    settings.customColors.otherBubble = e.target.value;
+    saveAll();
+    refreshChat();
+});
+$("my-text-color").addEventListener("input", e=>{
+    settings.themeIndex = -1;
+    settings.customColors.myText = e.target.value;
+    saveAll();
+    refreshChat();
+});
+$("other-text-color").addEventListener("input", e=>{
+    settings.themeIndex = -1;
+    settings.customColors.otherText = e.target.value;
+    saveAll();
+    refreshChat();
+});
+$("ui-color").addEventListener("input", e=>{
+    settings.themeIndex = -1;
+    settings.customColors.headerColor = e.target.value;
+    saveAll();
+    refreshChat();
+});
+$("bubble-opacity").addEventListener("input", e=>{
+    settings.customColors.bubbleOpacity = parseFloat(e.target.value);
+    $("bubble-opacity-val").textContent = e.target.value;
+    saveAll();
+    refreshChat();
+});
 
-    $("open-font-adjust").addEventListener("click", ()=>{
-        $("name-font-size").value = settings.nameFontSize;
-        $("name-font-size-val").textContent = settings.nameFontSize + "rem";
-        $("bubble-font-size").value = settings.bubbleFontSize;
-        $("bubble-font-size-val").textContent = settings.bubbleFontSize + "rem";
-        closeOverlay("appearance-overlay");
-        openOverlay("font-adjust-overlay");
-    });
-    $("font-adjust-back").addEventListener("click", ()=>{
-        closeOverlay("font-adjust-overlay");
-        openOverlay("appearance-overlay");
-    });
-    $("font-adjust-close").addEventListener("click", ()=>closeOverlay("font-adjust-overlay"));
-    $("font-adjust-close2").addEventListener("click", ()=>closeOverlay("font-adjust-overlay"));
+$("open-font-adjust").addEventListener("click", ()=>{
+    $("name-font-size").value = settings.nameFontSize;
+    $("name-font-size-val").textContent = settings.nameFontSize + "rem";
+    $("bubble-font-size").value = settings.bubbleFontSize;
+    $("bubble-font-size-val").textContent = settings.bubbleFontSize + "rem";
+    closeOverlay("appearance-overlay");
+    openOverlay("font-adjust-overlay");
+});
+$("font-adjust-back").addEventListener("click", ()=>{
+    closeOverlay("font-adjust-overlay");
+    openOverlay("appearance-overlay");
+});
+$("name-font-size").addEventListener("input", e=>{
+    settings.nameFontSize = parseFloat(e.target.value);
+    $("name-font-size-val").textContent = e.target.value + "rem";
+    saveAll();
+    applyBgAndFont();
+});
+$("bubble-font-size").addEventListener("input", e=>{
+    settings.bubbleFontSize = parseFloat(e.target.value);
+    $("bubble-font-size-val").textContent = e.target.value + "rem";
+    saveAll();
+    applyBgAndFont();
+});
 
-    $("name-font-size").addEventListener("input", e=>{
-        settings.nameFontSize = parseFloat(e.target.value);
-        $("name-font-size-val").textContent = e.target.value + "rem";
+$("open-background").addEventListener("click", ()=>{
+    $("bg-opacity").value = settings.bgOpacity;
+    $("bg-opacity-val").textContent = settings.bgOpacity;
+    $("bg-blur").value = settings.bgBlur;
+    $("bg-blur-val").textContent = settings.bgBlur + "px";
+    closeOverlay("appearance-overlay");
+    openOverlay("background-overlay");
+});
+$("background-back").addEventListener("click", ()=>{
+    closeOverlay("background-overlay");
+    openOverlay("appearance-overlay");
+});
+$("bg-opacity").addEventListener("input", e=>{
+    settings.bgOpacity = parseFloat(e.target.value);
+    $("bg-opacity-val").textContent = e.target.value;
+    saveAll();
+    applyBgAndFont();
+});
+$("bg-blur").addEventListener("input", e=>{
+    settings.bgBlur = parseInt(e.target.value, 10);
+    $("bg-blur-val").textContent = e.target.value + "px";
+    saveAll();
+    applyBgAndFont();
+});
+$("reset-bg").addEventListener("click", ()=>{
+    settings.bgImage = null;
+    settings.bgOpacity = 1;
+    settings.bgBlur = 0;
+    saveAll();
+    applyBgAndFont();
+});
+$("bg-upload").addEventListener("change", e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev=>{
+        settings.bgImage = ev.target.result;
         saveAll();
         applyBgAndFont();
-    });
-    $("bubble-font-size").addEventListener("input", e=>{
-        settings.bubbleFontSize = parseFloat(e.target.value);
-        $("bubble-font-size-val").textContent = e.target.value + "rem";
-        saveAll();
-        applyBgAndFont();
-    });
+    };
+    reader.readAsDataURL(file);
+});
 
-    $("open-background").addEventListener("click", ()=>{
-        $("bg-opacity").value = settings.bgOpacity;
-        $("bg-opacity-val").textContent = settings.bgOpacity;
-        $("bg-blur").value = settings.bgBlur;
-        $("bg-blur-val").textContent = settings.bgBlur + "px";
-        closeOverlay("appearance-overlay");
-        openOverlay("background-overlay");
-    });
-    $("background-back").addEventListener("click", ()=>{
-        closeOverlay("background-overlay");
-        openOverlay("appearance-overlay");
-    });
-    $("background-close").addEventListener("click", ()=>closeOverlay("background-overlay"));
-    $("background-close2").addEventListener("click", ()=>closeOverlay("background-overlay"));
-
-    $("bg-opacity").addEventListener("input", e=>{
-        settings.bgOpacity = parseFloat(e.target.value);
-        $("bg-opacity-val").textContent = e.target.value;
-        saveAll();
-        applyBgAndFont();
-    });
-    $("bg-blur").addEventListener("input", e=>{
-        settings.bgBlur = parseInt(e.target.value, 10);
-        $("bg-blur-val").textContent = e.target.value + "px";
-        saveAll();
-        applyBgAndFont();
-    });
-    $("reset-bg").addEventListener("click", ()=>{
-        settings.bgImage = null;
-        settings.bgOpacity = 1;
-        settings.bgBlur = 0;
-        saveAll();
-        applyBgAndFont();
-    });
-    $("bg-upload").addEventListener("change", e=>{
-        const file = e.target.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = ev=>{
-            settings.bgImage = ev.target.result;
-            saveAll();
-            applyBgAndFont();
-        };
-        reader.readAsDataURL(file);
-    });
-
-    /* 聊天设置 */
-    $("open-chat-settings").addEventListener("click", ()=>{
+/* 聊天设置 */
+$("open-chat-settings").addEventListener("click", ()=>{
     $("quote-switch").checked = settings.quoteEnabled;
+    $("robot-sticker-switch").checked = !!settings.robotStickerEnabled;
 
     const radio =
         document.querySelector(`input[name="receipt"][value="${settings.receiptStyle}"]`) ||
@@ -2899,102 +3540,172 @@ function bindEvents(){
     openOverlay("chat-settings-main-overlay");
 });
 
+$("chat-settings-back").addEventListener("click", ()=>{
+    closeOverlay("chat-settings-main-overlay");
+    openOverlay("settings-main-overlay");
+});
 
-    $("chat-settings-back").addEventListener("click", ()=>{
-        closeOverlay("chat-settings-main-overlay");
-        openOverlay("settings-main-overlay");
-    });
-    $("chat-settings-close").addEventListener("click", ()=>closeOverlay("chat-settings-main-overlay"));
-    $("chat-settings-close2").addEventListener("click", ()=>closeOverlay("chat-settings-main-overlay"));
+$("quote-switch").addEventListener("change", e=>{
+    settings.quoteEnabled = e.target.checked;
+    if(!settings.quoteEnabled){
+        clearQuote();
+    }
+    saveAll();
+    refreshChat();
+});
 
-    $("quote-switch").addEventListener("change", e=>{
-        settings.quoteEnabled = e.target.checked;
-        if(!settings.quoteEnabled){
-            quotedMessage = null;
-            refreshInputPlaceholder();
-        }
+$("robot-sticker-switch").addEventListener("change", e=>{
+    settings.robotStickerEnabled = e.target.checked;
+    saveAll();
+});
+
+document.querySelectorAll('input[name="receipt"]').forEach(radio=>{
+    radio.addEventListener("change", e=>{
+        if(!e.target.checked) return;
+        settings.receiptStyle = e.target.value;
+        updateReceiptOptionsUI();
         saveAll();
         refreshChat();
     });
+});
 
-    document.querySelectorAll('input[name="receipt"]').forEach(radio=>{
-        radio.addEventListener("change", e=>{
-            if(!e.target.checked) return;
-            settings.receiptStyle = e.target.value;
-            updateReceiptOptionsUI();
-            saveAll();
-            refreshChat();
-        });
-    });
-
-    $("min-wait").addEventListener("input", e=>{
-        settings.minWait = parseFloat(e.target.value);
-        if(settings.minWait > settings.maxWait){
-            settings.maxWait = settings.minWait;
-            $("max-wait").value = settings.maxWait;
-            $("max-wait-val").textContent = settings.maxWait + "s";
-        }
-        $("min-wait-val").textContent = settings.minWait + "s";
-        saveAll();
-    });
-
-    $("max-wait").addEventListener("input", e=>{
-        settings.maxWait = parseFloat(e.target.value);
-        if(settings.maxWait < settings.minWait){
-            settings.maxWait = settings.minWait;
-            e.target.value = settings.maxWait;
-        }
+$("min-wait").addEventListener("input", e=>{
+    settings.minWait = parseFloat(e.target.value);
+    if(settings.minWait > settings.maxWait){
+        settings.maxWait = settings.minWait;
+        $("max-wait").value = settings.maxWait;
         $("max-wait-val").textContent = settings.maxWait + "s";
-        saveAll();
-    });
+    }
+    $("min-wait-val").textContent = settings.minWait + "s";
+    saveAll();
+});
 
-    /* 塔罗 */
-    $("open-tarot").addEventListener("click", ()=>{
-        closeOverlay("settings-main-overlay");
-        openOverlay("tarot-overlay");
-    });
-    $("draw-one").addEventListener("click", ()=>drawTarot(1));
-    $("draw-three").addEventListener("click", ()=>drawTarot(3));
-    $("tarot-close").addEventListener("click", ()=>closeOverlay("tarot-overlay"));
-    $("tarot-close2").addEventListener("click", ()=>closeOverlay("tarot-overlay"));
-    $("tarot-back").addEventListener("click", ()=>{
-        closeOverlay("tarot-overlay");
-        openOverlay("settings-main-overlay");
-    });
+$("max-wait").addEventListener("input", e=>{
+    settings.maxWait = parseFloat(e.target.value);
+    if(settings.maxWait < settings.minWait){
+        settings.maxWait = settings.minWait;
+        e.target.value = settings.maxWait;
+    }
+    $("max-wait-val").textContent = settings.maxWait + "s";
+    saveAll();
+});
 
-    /* 浮层空白处关闭 */
-    document.querySelectorAll(".overlay").forEach(overlay=>{
-        overlay.addEventListener("click", e=>{
-            if(e.target === overlay) closeOverlay(overlay.id);
-        });
-    });
+/* 塔罗 */
+$("open-tarot").addEventListener("click", ()=>{
+    closeOverlay("settings-main-overlay");
+    openOverlay("tarot-overlay");
+});
+$("tarot-draw-btn").addEventListener("click", startTarotDraw);
+$("tarot-back").addEventListener("click", ()=>{
+    closeOverlay("tarot-overlay");
+    openOverlay("settings-main-overlay");
+});
 
-    /* ESC */
-    document.addEventListener("keydown", e=>{
-        if(e.key === "Escape"){
-            const opened = [...document.querySelectorAll(".overlay.show")];
-            if(opened.length){
-                closeOverlay(opened[opened.length - 1].id);
-            }
-            hideMsgMenu();
+/* 表情包 */
+$("sticker-upload").addEventListener("change", e=>{
+    handleStickerUpload(e.target.files || []);
+    e.target.value = "";
+});
+
+/* 输入框聚焦时，手机端尽量滚到底 */
+const scrollInputIntoView = ()=>{
+    setTimeout(()=>{
+        const container = $("messages-container");
+        if(container) container.scrollTop = container.scrollHeight;
+    }, 260);
+};
+$("message-input").addEventListener("focus", scrollInputIntoView);
+$("message-input").addEventListener("click", scrollInputIntoView);
+
+/* 点击浮层空白处关闭 */
+document.querySelectorAll(".overlay").forEach(overlay=>{
+    overlay.addEventListener("click", e=>{
+        if(e.target === overlay) closeOverlay(overlay.id);
+    });
+});
+
+/* ESC 关闭 */
+document.addEventListener("keydown", e=>{
+    if(e.key === "Escape"){
+        const opened = [...document.querySelectorAll(".overlay.show")];
+        if(opened.length){
+            closeOverlay(opened[opened.length - 1].id);
         }
-    });
+        hideMsgMenu();
+    }
+});
 }
 
-/* ----------------------------- 启动 ----------------------------- */
+/* 修正：机器人随机表情包时，名称和图片要对应同一张 */
+function scheduleRobotReply(contactId, myMsg){
+    const min = Math.min(settings.minWait, settings.maxWait);
+    const max = Math.max(settings.minWait, settings.maxWait);
+    const wait = Math.random() * (max * 1000 - min * 1000) + min * 1000;
+
+    setTimeout(()=>{
+        const liveContact = contacts.find(c=>c.id === contactId);
+        pendingReplies = Math.max(0, pendingReplies - 1);
+
+        if(!liveContact){
+            refreshChat();
+            return;
+        }
+
+        myMsg.receipt = "read";
+
+        const sticker = settings.robotStickerEnabled && stickers.length > 0 && Math.random() < .35
+            ? getRandomSticker()
+            : null;
+
+        let replyMsg;
+        if(sticker){
+            replyMsg = {
+                sender:"contact",
+                type:"sticker",
+                text:"",
+                stickerSrc: sticker.src,
+                stickerName: sticker.name || "表情包",
+                time:getCurrentTime(),
+                quote:null,
+                receipt:null,
+                edited:false
+            };
+        }else{
+            replyMsg = {
+                sender:"contact",
+                type:"text",
+                text:getRandomWordCardText(),
+                stickerSrc:null,
+                stickerName:"表情包",
+                time:getCurrentTime(),
+                quote:null,
+                receipt:null,
+                edited:false
+            };
+        }
+
+        pushMessage(liveContact, replyMsg);
+        saveAll();
+        refreshChat();
+    }, wait);
+}
+
+/* 启动 */
 setupStartupScreen();
 initData();
 buildUI();
 bindEvents();
 renderThemeGrid();
 syncColorInputs();
+updateWordcardBatchBar();
+renderStickerGrid();
 applyBgAndFont();
 
-const startupDelay = 1100 + Math.floor(Math.random() * 900);
+const startupDelay = 1200 + Math.floor(Math.random() * 900);
 window.addEventListener("load", ()=>{
     setTimeout(hideStartupScreen, startupDelay);
 });
-setTimeout(hideStartupScreen, 4200);
+setTimeout(hideStartupScreen, 4800);
 
 })();
 </script>
